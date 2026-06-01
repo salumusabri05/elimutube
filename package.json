@@ -9,6 +9,9 @@
     "backend/api",
     "admin-web"
   ],
+  "devDependencies": {
+    "prisma": "^7.8.0"
+  },
   "scripts": {
     "start:backend": "npm run start:dev --workspace=@elimutube/backend",
     "start:backend:prod": "npm run start:prod --workspace=@elimutube/backend",
