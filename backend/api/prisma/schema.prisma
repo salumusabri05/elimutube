@@ -1,0 +1,455 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum ContentType {
+  VIDEO
+  PDF
+  QUIZ
+  LIVE
+  INTERACTIVE
+}
+
+enum SubjectArea {
+  MATH
+  PHYSICS
+  CHEMISTRY
+  BIOLOGY
+  ENGLISH
+  KISWAHILI
+  HISTORY
+  GEOGRAPHY
+  ACCOUNTS
+}
+
+enum FormLevel {
+  FORM_1
+  FORM_2
+  FORM_3
+  FORM_4
+  FORM_5
+  FORM_6
+  STD_1
+  STD_2
+  STD_3
+  STD_4
+  STD_5
+  STD_6
+  STD_7
+}
+
+enum PaymentMethod {
+  MPESA
+  AIRTEL
+  TIGO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  PAUSED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  SETTLED
+  FAILED
+}
+
+enum LiveClassStatus {
+  SCHEDULED
+  LIVE
+  COMPLETED
+  CANCELLED
+}
+
+// ----------------------------------------------------
+// USER SERVICE SCHEMA
+// ----------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  phone        String?
+  roles        Role[]    @default([STUDENT])
+  active_role  Role      @default(STUDENT)
+  display_name String?
+  avatar_url   String?
+  verified_at  DateTime?
+  created_at   DateTime  @default(now())
+
+  // Relations
+  teacher_profile           TeacherProfile?
+  teacher_verification_docs TeacherVerificationDoc[]
+  lessons                   Lesson[]                 @relation("TeacherLessons")
+  student_subscriptions     Subscription[]           @relation("StudentSubscriptions")
+  teacher_subscriptions     Subscription[]           @relation("TeacherSubscriptions")
+  teacher_plans             TeacherPlan[]
+  payments                  Payment[]
+  payouts                   Payout[]
+  live_classes              LiveClass[]              @relation("TeacherLiveClasses")
+  live_attendees            LiveAttendee[]
+  notifications             Notification[]
+  notification_preferences  NotificationPreference?
+  teacher_subjects          TeacherSubject[]
+  content_ratings           ContentRating[]
+  content_reports           ContentReport[]
+  download_caches           DownloadCache[]
+  quiz_results              QuizResult[]
+  lesson_progress           LessonProgress[]
+}
+
+model TeacherProfile {
+  id                 String             @id @default(uuid())
+  teacher_id         String             @unique
+  bio                String?
+  intro_video_url    String?
+  verification_status VerificationStatus @default(PENDING)
+
+  teacher User @relation(fields: [teacher_id], references: [id])
+}
+
+model TeacherVerificationDoc {
+  id          String   @id @default(uuid())
+  teacher_id  String
+  document_url String
+  doc_type    String   // e.g., 'ID', 'DEGREE'
+  uploaded_at DateTime @default(now())
+
+  teacher User @relation(fields: [teacher_id], references: [id])
+}
+
+// ----------------------------------------------------
+// CONTENT SERVICE SCHEMA
+// ----------------------------------------------------
+
+model Lesson {
+  id           String      @id @default(uuid())
+  teacher_id   String
+  type         ContentType
+  title        String
+  title_sw     String?
+  mux_asset_id String?
+  pdf_url      String?
+  subject      SubjectArea
+  form_level   FormLevel
+  is_free      Boolean     @default(false)
+  duration_sec Int?
+  published_at DateTime?
+  created_at   DateTime    @default(now())
+
+  // Relations
+  teacher         User            @relation("TeacherLessons", fields: [teacher_id], references: [id])
+  quizzes         Quiz[]
+  lesson_progress LessonProgress[]
+  ai_summaries    AiSummary[]
+  captions        Caption[]
+  content_ratings ContentRating[]
+  content_reports ContentReport[]
+  download_caches DownloadCache[]
+}
+
+model Quiz {
+  id           String   @id @default(uuid())
+  lesson_id    String
+  generated_by String   // 'MANUAL' or 'AI'
+  created_at   DateTime @default(now())
+
+  lesson         Lesson         @relation(fields: [lesson_id], references: [id])
+  quiz_questions QuizQuestion[]
+  quiz_results   QuizResult[]
+}
+
+model QuizQuestion {
+  id                   String @id @default(uuid())
+  quiz_id              String
+  question_text_en     String
+  question_text_sw     String?
+  correct_answer_index Int
+
+  quiz         Quiz         @relation(fields: [quiz_id], references: [id])
+  quiz_options QuizOption[]
+}
+
+model QuizOption {
+  id          String @id @default(uuid())
+  question_id String
+  option_text String
+  position    Int
+
+  question QuizQuestion @relation(fields: [question_id], references: [id])
+}
+
+model QuizResult {
+  id           String   @id @default(uuid())
+  student_id   String
+  quiz_id      String
+  score        Int
+  completed_at DateTime @default(now())
+
+  student User @relation(fields: [student_id], references: [id])
+  quiz    Quiz @relation(fields: [quiz_id], references: [id])
+}
+
+model LessonProgress {
+  id               String    @id @default(uuid())
+  student_id       String
+  lesson_id        String
+  watch_seconds    Int       @default(0)
+  completed        Boolean   @default(false)
+  last_watched_at  DateTime  @default(now())
+
+  student User   @relation(fields: [student_id], references: [id])
+  lesson  Lesson @relation(fields: [lesson_id], references: [id])
+
+  @@unique([student_id, lesson_id])
+}
+
+model AiSummary {
+  id           String   @id @default(uuid())
+  lesson_id    String
+  summary_en   String?
+  summary_sw   String?
+  generated_at DateTime @default(now())
+
+  lesson Lesson @relation(fields: [lesson_id], references: [id])
+}
+
+model Caption {
+  id        String @id @default(uuid())
+  lesson_id String
+  language  String // 'en' or 'sw'
+  vtt_url   String
+  source    String // 'MUX' or 'AI'
+
+  lesson Lesson @relation(fields: [lesson_id], references: [id])
+}
+
+// ----------------------------------------------------
+// SUBSCRIPTION SERVICE SCHEMA
+// ----------------------------------------------------
+
+model TeacherPlan {
+  id          String  @id @default(uuid())
+  teacher_id  String
+  price_tsh   Int
+  description String?
+  is_active   Boolean @default(true)
+
+  teacher       User           @relation(fields: [teacher_id], references: [id])
+  subscriptions Subscription[]
+}
+
+model Subscription {
+  id             String             @id @default(uuid())
+  student_id     String
+  teacher_id     String
+  plan_id        String?
+  price_tsh      Int
+  status         SubscriptionStatus @default(ACTIVE)
+  payment_method PaymentMethod
+  selcom_ref     String?
+  period_start   DateTime           @default(now())
+  period_end     DateTime
+  auto_renew     Boolean            @default(false)
+  created_at     DateTime           @default(now())
+
+  student  User         @relation("StudentSubscriptions", fields: [student_id], references: [id])
+  teacher  User         @relation("TeacherSubscriptions", fields: [teacher_id], references: [id])
+  plan     TeacherPlan? @relation(fields: [plan_id], references: [id])
+  payments Payment[]
+}
+
+// ----------------------------------------------------
+// PAYMENT SERVICE SCHEMA
+// ----------------------------------------------------
+
+model Payment {
+  id              String        @id @default(uuid())
+  subscription_id String?
+  student_id      String
+  amount_tsh      Int
+  selcom_ref      String?       @unique
+  status          PaymentStatus @default(PENDING)
+  created_at      DateTime      @default(now())
+
+  subscription Subscription? @relation(fields: [subscription_id], references: [id])
+  student      User          @relation(fields: [student_id], references: [id])
+  ledger_entries LedgerEntry[]
+}
+
+model LedgerEntry {
+  id          String   @id @default(uuid())
+  payment_id  String
+  account     String   // e.g., 'PLATFORM_REVENUE', 'TEACHER_PAYABLE'
+  debit       Int      @default(0)
+  credit      Int      @default(0)
+  created_at  DateTime @default(now())
+
+  payment Payment @relation(fields: [payment_id], references: [id])
+}
+
+model Payout {
+  id           String       @id @default(uuid())
+  teacher_id   String
+  amount_tsh   Int
+  selcom_ref   String?      @unique
+  period_month String       // e.g., '2026-06'
+  status       PayoutStatus @default(PENDING)
+  processed_at DateTime?
+  created_at   DateTime     @default(now())
+
+  teacher       User           @relation(fields: [teacher_id], references: [id])
+  payout_ledger PayoutLedger[]
+}
+
+model PayoutLedger {
+  id         String   @id @default(uuid())
+  payout_id  String
+  payment_id String   // Reference to the original payment that contributed
+  amount_tsh Int
+  created_at DateTime @default(now())
+
+  payout Payout @relation(fields: [payout_id], references: [id])
+}
+
+// ----------------------------------------------------
+// LIVE SERVICE SCHEMA
+// ----------------------------------------------------
+
+model LiveClass {
+  id            String          @id @default(uuid())
+  teacher_id    String
+  title         String
+  subject       SubjectArea
+  form_level    FormLevel
+  scheduled_at  DateTime
+  max_attendees Int?
+  price_tsh     Int             @default(0)
+  agora_channel String?
+  status        LiveClassStatus @default(SCHEDULED)
+  created_at    DateTime        @default(now())
+
+  teacher         User            @relation("TeacherLiveClasses", fields: [teacher_id], references: [id])
+  live_attendees  LiveAttendee[]
+  live_recordings LiveRecording[]
+}
+
+model LiveAttendee {
+  id            String    @id @default(uuid())
+  live_class_id String
+  user_id       String
+  joined_at     DateTime  @default(now())
+  left_at       DateTime?
+
+  live_class LiveClass @relation(fields: [live_class_id], references: [id])
+  user       User      @relation(fields: [user_id], references: [id])
+}
+
+model LiveRecording {
+  id            String   @id @default(uuid())
+  live_class_id String
+  r2_url        String
+  duration_sec  Int?
+  published_at  DateTime @default(now())
+
+  live_class LiveClass @relation(fields: [live_class_id], references: [id])
+}
+
+// ----------------------------------------------------
+// NOTIFICATION SERVICE SCHEMA
+// ----------------------------------------------------
+
+model Notification {
+  id         String    @id @default(uuid())
+  user_id    String
+  type       String    // e.g., 'SYSTEM', 'PAYMENT', 'CLASS_REMINDER'
+  title      String
+  body       String
+  read_at    DateTime?
+  created_at DateTime  @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+}
+
+model NotificationPreference {
+  id           String  @id @default(uuid())
+  user_id      String  @unique
+  push_enabled Boolean @default(true)
+  sms_enabled  Boolean @default(false)
+
+  user User @relation(fields: [user_id], references: [id])
+}
+
+// ----------------------------------------------------
+// JUNCTION / SUPPORTING TABLES
+// ----------------------------------------------------
+
+model TeacherSubject {
+  id         String      @id @default(uuid())
+  teacher_id String
+  subject    SubjectArea
+
+  teacher User @relation(fields: [teacher_id], references: [id])
+  @@unique([teacher_id, subject])
+}
+
+model ContentRating {
+  id          String   @id @default(uuid())
+  student_id  String
+  lesson_id   String
+  rating      Int      // 1-5
+  review_text String?
+  created_at  DateTime @default(now())
+
+  student User   @relation(fields: [student_id], references: [id])
+  lesson  Lesson @relation(fields: [lesson_id], references: [id])
+}
+
+model ContentReport {
+  id          String    @id @default(uuid())
+  student_id  String
+  lesson_id   String
+  reason      String
+  reviewed_at DateTime?
+  created_at  DateTime  @default(now())
+
+  student User   @relation(fields: [student_id], references: [id])
+  lesson  Lesson @relation(fields: [lesson_id], references: [id])
+}
+
+model DownloadCache {
+  id         String   @id @default(uuid())
+  student_id String
+  lesson_id  String
+  local_path String
+  expires_at DateTime
+
+  student User   @relation(fields: [student_id], references: [id])
+  lesson  Lesson @relation(fields: [lesson_id], references: [id])
+}

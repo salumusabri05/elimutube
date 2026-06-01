@@ -1,0 +1,115 @@
+@import "tailwindcss";
+
+:root {
+  /* Default Dark Mode Theme */
+  --background: #060813;
+  --foreground: #f8fafc;
+  --card-bg: rgba(13, 18, 35, 0.7);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --sidebar-bg: #090b16;
+  --nav-bg: rgba(9, 11, 22, 0.8);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --grid-color: rgba(255, 255, 255, 0.02);
+  --shadow-color: rgba(0, 0, 0, 0.37);
+  --panel-hover: rgba(18, 25, 47, 0.85);
+}
+
+:root.light {
+  /* Light Mode Theme */
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.75);
+  --border-color: rgba(15, 23, 42, 0.08);
+  --sidebar-bg: #0f172a; /* keep sidebar dark for high contrast admin look */
+  --nav-bg: rgba(255, 255, 255, 0.8);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --grid-color: rgba(15, 23, 42, 0.03);
+  --shadow-color: rgba(15, 23, 42, 0.08);
+  --panel-hover: rgba(255, 255, 255, 0.95);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Background Gradients & Effects */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+  transition: background-image 0.3s ease;
+}
+
+.glow-orb-purple {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.1) 0%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.glow-orb-blue {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, transparent 70%);
+  filter: blur(50px);
+  pointer-events: none;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 8px 32px 0 var(--shadow-color);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-panel-hover:hover {
+  background: var(--panel-hover);
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 10px 40px 0 rgba(99, 102, 241, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Premium Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(6, 8, 19, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.badge-glow-green {
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.2);
+}
+
+.badge-glow-yellow {
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.2);
+}
+
+.badge-glow-red {
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
+}
