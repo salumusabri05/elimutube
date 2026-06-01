@@ -11,6 +11,7 @@
     "start:backend:prod": "npm run start:prod --workspace=@elimutube/backend",
     "build:backend": "npm run build --workspace=@elimutube/backend",
     "db:push": "npm run db:push --workspace=@elimutube/backend",
+    "db:seed": "npm run db:seed --workspace=@elimutube/backend",
     "start:admin": "npm run dev --workspace=admin-web",
     "build:admin": "npm run build --workspace=admin-web",
     "install:all": "npm install"
