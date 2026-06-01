@@ -13,6 +13,7 @@
     "start:backend": "npm run start:dev --workspace=@elimutube/backend",
     "start:backend:prod": "npm run start:prod --workspace=@elimutube/backend",
     "build:backend": "npm run build --workspace=@elimutube/backend",
+    "prisma:generate": "prisma generate --schema=backend/api/prisma/schema.prisma",
     "db:push": "npm run db:push --workspace=@elimutube/backend",
     "db:seed": "npm run db:seed --workspace=@elimutube/backend",
     "start:admin": "npm run dev --workspace=admin-web",
