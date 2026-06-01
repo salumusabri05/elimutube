@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { Prisma } from '@prisma/client';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { Prisma, VerificationStatus } from '@prisma/client';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('users')
 @Controller('users')
@@ -18,6 +18,21 @@ export class UsersController {
   @ApiOperation({ summary: 'Get all users' })
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Get('teachers')
+  @ApiOperation({ summary: 'Get all teachers with profiles and verification documents' })
+  findTeachers() {
+    return this.usersService.findTeachers();
+  }
+
+  @Post('teachers/:id/verify')
+  @ApiOperation({ summary: 'Update a teacher\'s verification status' })
+  verifyTeacher(
+    @Param('id') id: string,
+    @Body() body: { status: VerificationStatus },
+  ) {
+    return this.usersService.verifyTeacher(id, body.status);
   }
 
   @Get(':id')

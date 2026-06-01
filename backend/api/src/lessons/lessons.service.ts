@@ -12,8 +12,54 @@ export class LessonsService {
 
   async findAll() {
     return this.prisma.lesson.findMany({
-      include: { teacher: true }
+      include: { 
+        teacher: true,
+        content_reports: true,
+      }
     });
+  }
+
+  async findAllReports() {
+    return this.prisma.contentReport.findMany({
+      include: {
+        student: true,
+        lesson: {
+          include: {
+            teacher: true,
+          },
+        },
+      },
+      orderBy: {
+        created_at: 'desc',
+      },
+    });
+  }
+
+  async resolveReport(id: string, action: 'DISMISS' | 'TAKEDOWN') {
+    const report = await this.prisma.contentReport.findUnique({
+      where: { id },
+    });
+    if (!report) {
+      throw new NotFoundException(`Report with ID ${id} not found`);
+    }
+
+    if (action === 'TAKEDOWN') {
+      // Cascade delete the lesson and reports
+      await this.prisma.contentReport.deleteMany({
+        where: { lesson_id: report.lesson_id },
+      });
+      await this.prisma.lesson.delete({
+        where: { id: report.lesson_id },
+      });
+    } else {
+      // Dismiss the report by updating reviewed_at
+      await this.prisma.contentReport.update({
+        where: { id },
+        data: { reviewed_at: new Date() },
+      });
+    }
+
+    return { success: true };
   }
 
   async findOne(id: string) {

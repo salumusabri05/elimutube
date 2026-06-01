@@ -1,11 +1,79 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { Users, Video, CreditCard, Activity, ArrowUpRight, Award, Flame, AlertCircle } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 export default function Dashboard() {
+  const [statsData, setStatsData] = useState({
+    teachers: '0',
+    students: '0',
+    lessons: '0',
+    totalVolume: 'TSh 0',
+  });
+  const [verifications, setVerifications] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const fetchData = async () => {
+    try {
+      setError('');
+      const [stats, teachers, payments] = await Promise.all([
+        apiRequest('dashboard/stats'),
+        apiRequest('users/teachers'),
+        apiRequest('payments'),
+      ]);
+
+      setStatsData({
+        teachers: stats.teachers.toLocaleString(),
+        students: stats.students.toLocaleString(),
+        lessons: stats.lessons.toLocaleString(),
+        totalVolume: `TSh ${stats.totalVolume.toLocaleString()}`,
+      });
+
+      // Filter teachers to find pending ones
+      const pending = teachers
+        .filter((t: any) => t.teacher_profile?.verification_status === 'PENDING')
+        .map((t: any) => ({
+          id: t.id,
+          name: t.display_name || t.email,
+          subject: t.teacher_profile?.bio || 'Teacher Candidate',
+          docs: t.teacher_verification_docs?.map((d: any) => d.doc_type).join(' & ') || 'Pending Docs',
+          date: new Date(t.created_at).toLocaleDateString(),
+        }));
+      setVerifications(pending);
+
+      setTransactions(payments);
+    } catch (err: any) {
+      console.error(err);
+      setError('Failed to fetch platform metrics from backend.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleVerify = async (id: string, status: 'APPROVED' | 'REJECTED') => {
+    try {
+      await apiRequest(`users/teachers/${id}/verify`, {
+        method: 'POST',
+        body: JSON.stringify({ status }),
+      });
+      fetchData(); // Refresh data
+    } catch (err: any) {
+      alert(`Verification action failed: ${err.message}`);
+    }
+  };
+
   const stats = [
     { 
       title: 'Verified Teachers', 
-      value: '1,234', 
-      change: '+12% this month', 
+      value: statsData.teachers, 
+      change: 'Active on platform', 
       icon: Award, 
       color: 'text-violet-400', 
       glow: 'shadow-violet-500/10',
@@ -13,8 +81,8 @@ export default function Dashboard() {
     },
     { 
       title: 'Active Students', 
-      value: '45.2K', 
-      change: '+28% this month', 
+      value: statsData.students, 
+      change: 'Subscribed & Free tier', 
       icon: Users, 
       color: 'text-blue-400', 
       glow: 'shadow-blue-500/10',
@@ -22,8 +90,8 @@ export default function Dashboard() {
     },
     { 
       title: 'Published Lessons', 
-      value: '8,439', 
-      change: '+8% this week', 
+      value: statsData.lessons, 
+      change: 'Video & PDF format', 
       icon: Video, 
       color: 'text-indigo-400', 
       glow: 'shadow-indigo-500/10',
@@ -31,25 +99,13 @@ export default function Dashboard() {
     },
     { 
       title: 'Platform Volume', 
-      value: 'TSh 14.2M', 
-      change: '+15.4% vs last mo', 
+      value: statsData.totalVolume, 
+      change: 'Selcom processed amount', 
       icon: CreditCard, 
       color: 'text-emerald-400', 
       glow: 'shadow-emerald-500/10',
       chartPath: "M 0 20 Q 20 15 40 8 T 80 5 T 120 2 T 160 0"
     },
-  ];
-
-  const verificationRequests = [
-    { name: 'Mwalimu Mussa Ramadhani', subject: 'Mathematics (NECTA Form IV)', docs: 'Degree & NECTA ID', date: 'Just now' },
-    { name: 'Amina Selemani', subject: 'Chemistry & Biology', docs: 'Diploma Certificate', date: '10 mins ago' },
-    { name: 'Dr. Josephat Mrema', subject: 'Physics (ACSEE Form VI)', docs: 'PhD & Academic Transcripts', date: '2 hours ago' },
-  ];
-
-  const recentTransactions = [
-    { id: 'TXN-9018', user: 'Said Hamis', amount: 'TSh 15,000', plan: 'Monthly Premium Pack', method: 'M-PESA', status: 'Success' },
-    { id: 'TXN-9017', user: 'Neema John', amount: 'TSh 5,000', plan: 'Single Lesson Pay', method: 'Tigo Pesa', status: 'Success' },
-    { id: 'TXN-9016', user: 'Baraka Lazaro', amount: 'TSh 20,000', plan: 'Live Class Ticket', method: 'Airtel Money', status: 'Success' },
   ];
 
   return (
@@ -80,6 +136,13 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {error && (
+        <div className="flex items-center gap-2 p-4 bg-red-500/10 border border-red-500/25 rounded-2xl text-red-400">
+          <AlertCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -140,26 +203,48 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="space-y-4">
-            {verificationRequests.map((req, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#1b1e35] to-[#252a4e] flex items-center justify-center font-bold text-indigo-400 border border-indigo-500/10">
-                    {req.name.charAt(8)}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-200">{req.name}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{req.subject}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <span className="text-[10px] text-slate-500 font-medium">{req.date}</span>
-                  <button className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-500 shadow-md shadow-indigo-600/10 transition-colors">
-                    Review
-                  </button>
-                </div>
+          <div className="space-y-4 min-h-[250px]">
+            {loading ? (
+              <div className="h-full flex items-center justify-center py-12">
+                <span className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               </div>
-            ))}
+            ) : verifications.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center py-12 text-slate-500 text-sm">
+                <Award className="w-8 h-8 mb-2 opacity-50" />
+                No pending verification requests.
+              </div>
+            ) : (
+              verifications.map((req, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#1b1e35] to-[#252a4e] flex items-center justify-center font-bold text-indigo-400 border border-indigo-500/10">
+                      {req.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="max-w-[200px] md:max-w-xs">
+                      <p className="text-sm font-semibold text-slate-200 truncate">{req.name}</p>
+                      <p className="text-xs text-slate-500 mt-0.5 truncate">{req.subject}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <span className="text-[10px] text-slate-500 font-medium">{req.date}</span>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => handleVerify(req.id, 'APPROVED')}
+                        className="px-2.5 py-1 text-[11px] font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-500 shadow-md shadow-indigo-600/10 transition-colors"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        onClick={() => handleVerify(req.id, 'REJECTED')}
+                        className="px-2.5 py-1 text-[11px] font-semibold text-slate-300 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
@@ -175,29 +260,44 @@ export default function Dashboard() {
             </button>
           </div>
 
-          <div className="space-y-4">
-            {recentTransactions.map((tx, i) => (
-              <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200">
-                <div className="flex items-center gap-3.5">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-slate-200">{tx.user}</span>
-                      <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">{tx.id}</span>
-                    </div>
-                    <p className="text-xs text-slate-500 mt-0.5">{tx.plan} via {tx.method}</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1.5">
-                  <span className="text-sm font-bold text-slate-200">{tx.amount}</span>
-                  <span className="px-2 py-0.5 text-[9px] font-bold text-emerald-400 bg-emerald-500/10 rounded-full border border-emerald-500/20 badge-glow-green">
-                    {tx.status}
-                  </span>
-                </div>
+          <div className="space-y-4 min-h-[250px]">
+            {loading ? (
+              <div className="h-full flex items-center justify-center py-12">
+                <span className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               </div>
-            ))}
+            ) : transactions.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center py-12 text-slate-500 text-sm">
+                <CreditCard className="w-8 h-8 mb-2 opacity-50" />
+                No transactions found.
+              </div>
+            ) : (
+              transactions.map((tx, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200">
+                  <div className="flex items-center gap-3.5">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                      <CreditCard className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-slate-200">{tx.user}</span>
+                        <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">{tx.id}</span>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-0.5">{tx.plan} via {tx.method}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1.5">
+                    <span className="text-sm font-bold text-slate-200">{tx.amount}</span>
+                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full border ${
+                      tx.status === 'SUCCESS' 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 badge-glow-green' 
+                        : 'bg-red-500/10 text-red-400 border-red-500/20 badge-glow-red'
+                    }`}>
+                      {tx.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

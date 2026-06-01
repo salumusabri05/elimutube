@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock, Mail, BookOpen, AlertCircle } from 'lucide-react';
+import { apiRequest } from '@/lib/api';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -11,21 +12,26 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
 
-    // Mock Authentication matching admin credentials
-    setTimeout(() => {
-      if (email === 'admin@elimutube.com' && password === 'admin123') {
-        localStorage.setItem('isAdminAuthenticated', 'true');
-        router.push('/');
-      } else {
-        setError('Invalid admin credentials. Hint: admin@elimutube.com / admin123');
-        setIsLoading(false);
-      }
-    }, 800);
+    try {
+      const res = await apiRequest('auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+
+      localStorage.setItem('isAdminAuthenticated', 'true');
+      localStorage.setItem('adminToken', res.token);
+      localStorage.setItem('adminUser', JSON.stringify(res.user));
+      
+      router.push('/');
+    } catch (err: any) {
+      setError(err.message || 'Invalid admin credentials. Hint: admin@elimutube.com / admin123');
+      setIsLoading(false);
+    }
   };
 
   return (

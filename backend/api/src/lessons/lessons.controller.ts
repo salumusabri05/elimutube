@@ -20,6 +20,21 @@ export class LessonsController {
     return this.lessonsService.findAll();
   }
 
+  @Get('reports')
+  @ApiOperation({ summary: 'Get all content reports' })
+  findAllReports() {
+    return this.lessonsService.findAllReports();
+  }
+
+  @Post('reports/:id/resolve')
+  @ApiOperation({ summary: 'Resolve a content report' })
+  resolveReport(
+    @Param('id') id: string,
+    @Body() body: { action: 'DISMISS' | 'TAKEDOWN' },
+  ) {
+    return this.lessonsService.resolveReport(id, body.action);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get a lesson by ID' })
   findOne(@Param('id') id: string) {
