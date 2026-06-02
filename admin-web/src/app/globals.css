@@ -1,33 +1,49 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 :root {
-  /* Default Dark Mode Theme */
+  /* Default Light Mode Theme */
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --card-bg: rgba(255, 255, 255, 0.7);
+  --border-color: rgba(15, 23, 42, 0.06);
+  --sidebar-bg: #ffffff;
+  --sidebar-border: rgba(15, 23, 42, 0.06);
+  --sidebar-text-primary: #0f172a;
+  --sidebar-text-secondary: #64748b;
+  --sidebar-item-hover: rgba(15, 23, 42, 0.04);
+  --sidebar-footer-bg: rgba(15, 23, 42, 0.02);
+  --nav-bg: rgba(255, 255, 255, 0.8);
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --grid-color: rgba(15, 23, 42, 0.02);
+  --shadow-color: rgba(15, 23, 42, 0.04);
+  --panel-hover: rgba(255, 255, 255, 0.9);
+  --item-bg: rgba(15, 23, 42, 0.02);
+  --item-hover: rgba(15, 23, 42, 0.04);
+}
+
+.dark, :root.dark {
+  /* Dark Mode Theme */
   --background: #060813;
   --foreground: #f8fafc;
   --card-bg: rgba(13, 18, 35, 0.7);
   --border-color: rgba(255, 255, 255, 0.08);
   --sidebar-bg: #090b16;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-text-primary: #f8fafc;
+  --sidebar-text-secondary: #94a3b8;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.04);
+  --sidebar-footer-bg: rgba(6, 8, 16, 0.4);
   --nav-bg: rgba(9, 11, 22, 0.8);
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --grid-color: rgba(255, 255, 255, 0.02);
   --shadow-color: rgba(0, 0, 0, 0.37);
   --panel-hover: rgba(18, 25, 47, 0.85);
-}
-
-:root.light {
-  /* Light Mode Theme */
-  --background: #f1f5f9;
-  --foreground: #0f172a;
-  --card-bg: rgba(255, 255, 255, 0.75);
-  --border-color: rgba(15, 23, 42, 0.08);
-  --sidebar-bg: #0f172a; /* keep sidebar dark for high contrast admin look */
-  --nav-bg: rgba(255, 255, 255, 0.8);
-  --text-primary: #0f172a;
-  --text-secondary: #64748b;
-  --grid-color: rgba(15, 23, 42, 0.03);
-  --shadow-color: rgba(15, 23, 42, 0.08);
-  --panel-hover: rgba(255, 255, 255, 0.95);
+  --item-bg: rgba(255, 255, 255, 0.04);
+  --item-hover: rgba(255, 255, 255, 0.08);
 }
 
 body {
@@ -113,3 +129,41 @@ body {
 .badge-glow-red {
   box-shadow: 0 0 8px rgba(239, 68, 68, 0.2);
 }
+
+/* Theme Utilities */
+.theme-text-primary {
+  color: var(--text-primary);
+}
+.theme-text-secondary {
+  color: var(--text-secondary);
+}
+.theme-border {
+  border-color: var(--border-color);
+}
+.theme-item-bg {
+  background-color: var(--item-bg);
+}
+.theme-item-hover:hover {
+  background-color: var(--item-hover);
+}
+
+.theme-sidebar-bg {
+  background-color: var(--sidebar-bg);
+}
+.theme-sidebar-border {
+  border-color: var(--sidebar-border);
+}
+.theme-sidebar-text-primary {
+  color: var(--sidebar-text-primary);
+}
+.theme-sidebar-text-secondary {
+  color: var(--sidebar-text-secondary);
+}
+.theme-sidebar-item-hover:hover {
+  background-color: var(--sidebar-item-hover);
+}
+.theme-sidebar-footer-bg {
+  background-color: var(--sidebar-footer-bg);
+}
+
+

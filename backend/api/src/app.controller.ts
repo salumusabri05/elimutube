@@ -193,4 +193,84 @@ export class AppController {
       status: p.status,
     }));
   }
+
+
+  @Get('database/tables')
+  async getTables() {
+    return [
+      { name: 'user', label: 'Users' },
+      { name: 'teacherProfile', label: 'Teacher Profiles' },
+      { name: 'teacherVerificationDoc', label: 'Teacher Verification Docs' },
+      { name: 'lesson', label: 'Lessons' },
+      { name: 'quiz', label: 'Quizzes' },
+      { name: 'quizQuestion', label: 'Quiz Questions' },
+      { name: 'quizOption', label: 'Quiz Options' },
+      { name: 'quizResult', label: 'Quiz Results' },
+      { name: 'lessonProgress', label: 'Lesson Progress' },
+      { name: 'aiSummary', label: 'AI Summaries' },
+      { name: 'caption', label: 'Captions' },
+      { name: 'teacherPlan', label: 'Teacher Plans' },
+      { name: 'subscription', label: 'Subscriptions' },
+      { name: 'payment', label: 'Payments' },
+      { name: 'ledgerEntry', label: 'Ledger Entries' },
+      { name: 'payout', label: 'Payouts' },
+      { name: 'payoutLedger', label: 'Payout Ledgers' },
+      { name: 'liveClass', label: 'Live Classes' },
+      { name: 'liveAttendee', label: 'Live Attendees' },
+      { name: 'liveRecording', label: 'Live Recordings' },
+      { name: 'notification', label: 'Notifications' },
+      { name: 'notificationPreference', label: 'Notification Preferences' },
+      { name: 'teacherSubject', label: 'Teacher Subjects' },
+      { name: 'contentRating', label: 'Content Ratings' },
+      { name: 'contentReport', label: 'Content Reports' },
+      { name: 'downloadCache', label: 'Download Caches' },
+    ];
+  }
+
+  @Get('database/tables/:table')
+  async getTableData(@Param('table') table: string) {
+    const model = (this.prisma as any)[table];
+    if (!model) {
+      throw new Error(`Table ${table} not found`);
+    }
+    return model.findMany({
+      take: 100,
+    });
+  }
+
+  @Post('database/tables/:table')
+  async createTableRow(@Param('table') table: string, @Body() body: any) {
+    const model = (this.prisma as any)[table];
+    if (!model) {
+      throw new Error(`Table ${table} not found`);
+    }
+    return model.create({
+      data: body,
+    });
+  }
+
+  @Post('database/tables/:table/:id/update')
+  async updateTableRow(@Param('table') table: string, @Param('id') id: string, @Body() body: any) {
+    const model = (this.prisma as any)[table];
+    if (!model) {
+      throw new Error(`Table ${table} not found`);
+    }
+    const data = { ...body };
+    delete data.id;
+    return model.update({
+      where: { id },
+      data,
+    });
+  }
+
+  @Post('database/tables/:table/:id/delete')
+  async deleteTableRow(@Param('table') table: string, @Param('id') id: string) {
+    const model = (this.prisma as any)[table];
+    if (!model) {
+      throw new Error(`Table ${table} not found`);
+    }
+    return model.delete({
+      where: { id },
+    });
+  }
 }

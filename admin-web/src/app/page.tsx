@@ -152,16 +152,16 @@ export default function Dashboard() {
             <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-500/5 to-transparent rounded-bl-full pointer-events-none group-hover:from-indigo-500/10 transition-all duration-300`} />
             
             <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-400">{stat.title}</span>
-              <div className={`p-2.5 rounded-xl bg-white/5 ${stat.color} border border-white/5`}>
+              <span className="text-sm font-semibold theme-text-secondary">{stat.title}</span>
+              <div className={`p-2.5 rounded-xl theme-item-bg ${stat.color} theme-border border`}>
                 <stat.icon className="w-5 h-5" />
               </div>
             </div>
             
             <div className="mt-4 flex items-end justify-between">
               <div>
-                <span className="text-3xl font-extrabold text-white tracking-tight">{stat.value}</span>
-                <span className="block text-[11px] font-medium text-slate-500 mt-1">{stat.change}</span>
+                <span className="text-3xl font-extrabold theme-text-primary tracking-tight">{stat.value}</span>
+                <span className="block text-[11px] font-medium theme-text-secondary mt-1">{stat.change}</span>
               </div>
 
               {/* Aesthetic Sparkline SVG */}
@@ -195,8 +195,8 @@ export default function Dashboard() {
         <div className="glass-panel p-6 rounded-3xl shadow-xl flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-bold text-white">Pending Verifications</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Verification requests from teacher candidates</p>
+              <h2 className="text-lg font-bold theme-text-primary">Pending Verifications</h2>
+              <p className="text-xs theme-text-secondary mt-0.5">Verification requests from teacher candidates</p>
             </div>
             <button className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1">
               View Audit Queue <ArrowUpRight className="w-3 h-3" />
@@ -209,24 +209,24 @@ export default function Dashboard() {
                 <span className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : verifications.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center py-12 text-slate-500 text-sm">
+              <div className="h-full flex flex-col items-center justify-center py-12 theme-text-secondary text-sm">
                 <Award className="w-8 h-8 mb-2 opacity-50" />
                 No pending verification requests.
               </div>
             ) : (
               verifications.map((req, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200">
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl theme-item-bg theme-border border theme-item-hover transition-all duration-200">
                   <div className="flex items-center gap-3.5">
                     <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#1b1e35] to-[#252a4e] flex items-center justify-center font-bold text-indigo-400 border border-indigo-500/10">
                       {req.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="max-w-[200px] md:max-w-xs">
-                      <p className="text-sm font-semibold text-slate-200 truncate">{req.name}</p>
-                      <p className="text-xs text-slate-500 mt-0.5 truncate">{req.subject}</p>
+                      <p className="text-sm font-semibold theme-text-primary truncate">{req.name}</p>
+                      <p className="text-xs theme-text-secondary mt-0.5 truncate">{req.subject}</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
-                    <span className="text-[10px] text-slate-500 font-medium">{req.date}</span>
+                    <span className="text-[10px] theme-text-secondary font-medium">{req.date}</span>
                     <div className="flex gap-2">
                       <button 
                         onClick={() => handleVerify(req.id, 'APPROVED')}
@@ -236,7 +236,7 @@ export default function Dashboard() {
                       </button>
                       <button 
                         onClick={() => handleVerify(req.id, 'REJECTED')}
-                        className="px-2.5 py-1 text-[11px] font-semibold text-slate-300 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                        className="px-2.5 py-1 text-[11px] font-semibold theme-text-primary theme-item-bg rounded-lg theme-item-hover border theme-border transition-colors"
                       >
                         Reject
                       </button>
@@ -252,8 +252,8 @@ export default function Dashboard() {
         <div className="glass-panel p-6 rounded-3xl shadow-xl flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-bold text-white">Payment Ledger Feed</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Selcom STK pushes and ledger state updates</p>
+              <h2 className="text-lg font-bold theme-text-primary">Payment Ledger Feed</h2>
+              <p className="text-xs theme-text-secondary mt-0.5">Selcom STK pushes and ledger state updates</p>
             </div>
             <button className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1">
               Open Ledger <ArrowUpRight className="w-3 h-3" />
@@ -266,27 +266,27 @@ export default function Dashboard() {
                 <span className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
               </div>
             ) : transactions.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center py-12 text-slate-500 text-sm">
+              <div className="h-full flex flex-col items-center justify-center py-12 theme-text-secondary text-sm">
                 <CreditCard className="w-8 h-8 mb-2 opacity-50" />
                 No transactions found.
               </div>
             ) : (
               transactions.map((tx, i) => (
-                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-200">
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl theme-item-bg theme-border border theme-item-hover transition-all duration-200">
                   <div className="flex items-center gap-3.5">
                     <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                       <CreditCard className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-slate-200">{tx.user}</span>
-                        <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">{tx.id}</span>
+                        <span className="text-sm font-semibold theme-text-primary">{tx.user}</span>
+                        <span className="text-[10px] font-mono theme-text-secondary bg-slate-800 dark:bg-slate-800 px-1.5 py-0.5 rounded">{tx.id}</span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{tx.plan} via {tx.method}</p>
+                      <p className="text-xs theme-text-secondary mt-0.5">{tx.plan} via {tx.method}</p>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1.5">
-                    <span className="text-sm font-bold text-slate-200">{tx.amount}</span>
+                    <span className="text-sm font-bold theme-text-primary">{tx.amount}</span>
                     <span className={`px-2 py-0.5 text-[9px] font-bold rounded-full border ${
                       tx.status === 'SUCCESS' 
                         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 badge-glow-green' 

@@ -53,13 +53,13 @@ export default function PayoutsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Teacher Payout Management</h1>
-          <p className="text-slate-400 text-sm mt-1">Audit billing settlements, process Selcom Aggregator payouts, and balance platform ledger splits.</p>
+          <h1 className="text-2xl font-bold theme-text-primary tracking-tight">Teacher Payout Management</h1>
+          <p className="text-sm mt-1 theme-text-secondary">Audit billing settlements, process Selcom Aggregator payouts, and balance platform ledger splits.</p>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={() => alert('CSV Export is not configured for local dev environment.')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 text-slate-200 text-sm font-semibold rounded-xl transition-all duration-200"
+            className="flex items-center gap-2 px-4 py-2.5 theme-item-bg theme-item-hover border theme-border theme-text-secondary hover:theme-text-primary text-sm font-semibold rounded-xl transition-all duration-200"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
@@ -80,9 +80,9 @@ export default function PayoutsPage() {
       )}
 
       {/* Main Ledger Table */}
-      <div className="glass-panel rounded-3xl overflow-hidden shadow-xl border-white/5">
-        <div className="p-6 border-b border-white/5 bg-[#0d1223]/30 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
-          <h2 className="text-lg font-bold text-white">Monthly Settled Receipts</h2>
+      <div className="glass-panel rounded-3xl overflow-hidden shadow-xl theme-border border">
+        <div className="p-6 border-b theme-border bg-slate-100/50 dark:bg-[#0d1223]/30 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
+          <h2 className="text-lg font-bold theme-text-primary">Monthly Settled Receipts</h2>
           <div className="flex gap-2">
             <div className="relative">
               <input 
@@ -90,14 +90,14 @@ export default function PayoutsPage() {
                 placeholder="Search teacher name..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/5 focus:outline-none focus:border-indigo-500 text-sm text-white placeholder-slate-500 w-64"
+                className="pl-9 pr-4 py-2 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 w-64"
               />
               <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
             </div>
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-[#090b16] border border-white/5 text-sm text-slate-300 focus:outline-none focus:border-indigo-500"
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#090b16] border theme-border text-sm theme-text-secondary focus:outline-none focus:border-indigo-500"
             >
               <option value="All">All Statuses</option>
               <option value="Settled">Settled</option>
@@ -113,13 +113,13 @@ export default function PayoutsPage() {
               <span className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredPayouts.length === 0 ? (
-            <div className="text-center py-20 text-slate-500">
+            <div className="text-center py-20 theme-text-secondary">
               No payout entries found.
             </div>
           ) : (
             <table className="w-full border-collapse text-left">
               <thead>
-                <tr className="border-b border-white/5 bg-[#090b16]/30 text-slate-400 text-xs font-bold uppercase tracking-wider">
+                <tr className="border-b theme-border bg-slate-100/20 dark:bg-[#090b16]/30 theme-text-secondary text-xs font-bold uppercase tracking-wider">
                   <th className="px-6 py-4">Ref ID</th>
                   <th className="px-6 py-4">Mwalimu (Teacher)</th>
                   <th className="px-6 py-4">Period</th>
@@ -129,15 +129,15 @@ export default function PayoutsPage() {
                   <th className="px-6 py-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5 text-sm">
+              <tbody className="divide-y theme-border text-sm">
                 {filteredPayouts.map((p) => (
-                  <tr key={p.id} className="hover:bg-white/5 transition-colors">
-                    <td className="px-6 py-5 whitespace-nowrap text-xs font-mono text-slate-400">{p.id.substring(0, 8)}</td>
+                  <tr key={p.id} className="theme-item-hover transition-colors">
+                    <td className="px-6 py-5 whitespace-nowrap text-xs font-mono theme-text-secondary">{p.id.substring(0, 8)}</td>
                     <td className="px-6 py-5 whitespace-nowrap">
-                      <div className="font-semibold text-slate-200">{p.teacher}</div>
+                      <div className="font-semibold theme-text-primary">{p.teacher}</div>
                     </td>
-                    <td className="px-6 py-5 whitespace-nowrap text-slate-400">{p.period}</td>
-                    <td className="px-6 py-5 whitespace-nowrap font-medium text-slate-300">{p.gross}</td>
+                    <td className="px-6 py-5 whitespace-nowrap theme-text-secondary">{p.period}</td>
+                    <td className="px-6 py-5 whitespace-nowrap font-medium theme-text-primary">{p.gross}</td>
                     <td className="px-6 py-5 whitespace-nowrap text-red-400 font-medium">-{p.fee}</td>
                     <td className="px-6 py-5 whitespace-nowrap text-emerald-400 font-bold">{p.net}</td>
                     <td className="px-6 py-5 whitespace-nowrap">
