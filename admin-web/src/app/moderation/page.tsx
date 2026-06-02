@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ShieldAlert, UserX, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import { ShieldAlert, UserX, AlertTriangle, CheckCircle, RefreshCw, AlertCircle } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 export default function ModerationPage() {

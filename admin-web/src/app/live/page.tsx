@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Video, Plus, Calendar, Users, ShieldAlert, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Video, Plus, Calendar, Users, ShieldAlert, CheckCircle, Clock, AlertCircle, X } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 export default function LivePage() {
