@@ -19,8 +19,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${outfit.className} flex h-screen overflow-hidden relative`}>
+    <html lang="en" className="dark" suppressHydrationWarning>
+      <body className={`${outfit.className} flex h-screen overflow-hidden relative`} suppressHydrationWarning>
         {/* Dynamic Glowing Ambient Lights */}
         <div className="glow-orb-purple top-[-100px] left-[-100px]" />
         <div className="glow-orb-blue bottom-[-100px] right-[-100px]" />

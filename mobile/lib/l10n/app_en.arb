@@ -1,0 +1,12 @@
+{
+  "appTitle": "ElimuTube",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "welcomeMessage": "Welcome to ElimuTube",
+  "subtitle": "The Unified Video Learning Marketplace",
+  "enrollNow": "Enroll Now",
+  "viewProfile": "View Profile",
+  "changeTheme": "Toggle Theme",
+  "changeLanguage": "Change Language"
+}
