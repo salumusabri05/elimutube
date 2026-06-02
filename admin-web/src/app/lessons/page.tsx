@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { BookOpen, Search, AlertCircle, RefreshCw, Eye, EyeOff, Star, MessageSquare, Brain, Subtitles, Video, FileText } from 'lucide-react';
-import { apiRequest } from '@/lib/api';
+import { BookOpen, Search, AlertCircle, RefreshCw, Eye, EyeOff, Star, MessageSquare, Brain, Subtitles, Video, FileText, Plus, X } from 'lucide-react';
+import { apiRequest, getApiBase } from '@/lib/api';
 
 export default function LessonsPage() {
   const [lessons, setLessons] = useState<any[]>([]);
@@ -11,6 +11,93 @@ export default function LessonsPage() {
   const [searchText, setSearchText] = useState('');
   const [subjectFilter, setSubjectFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+
+  // Create Lesson Modal States
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createTitle, setCreateTitle] = useState('');
+  const [createTitleSw, setCreateTitleSw] = useState('');
+  const [createSubject, setCreateSubject] = useState('MATH');
+  const [createFormLevel, setCreateFormLevel] = useState('FORM_1');
+  const [createType, setCreateType] = useState('VIDEO');
+  const [createPdfUrl, setCreatePdfUrl] = useState('');
+  const [createMuxAssetId, setCreateMuxAssetId] = useState('');
+  const [createIsFree, setCreateIsFree] = useState(true);
+  const [createDurationMin, setCreateDurationMin] = useState('30');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Upload Mode States
+  const [pdfSourceMode, setPdfSourceMode] = useState<'upload' | 'url'>('upload');
+  const [videoSourceMode, setVideoSourceMode] = useState<'upload' | 'url'>('upload');
+  const [selectedPdfFile, setSelectedPdfFile] = useState<File | null>(null);
+  const [selectedVideoFile, setSelectedVideoFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState('');
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: 'PDF' | 'VIDEO') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (type === 'PDF') {
+      setSelectedPdfFile(file);
+    } else {
+      setSelectedVideoFile(file);
+    }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const API_BASE = getApiBase();
+      const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `${API_BASE}/admin/upload-asset`, true);
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percent = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percent);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const response = JSON.parse(xhr.responseText);
+          if (response.success && response.url) {
+            if (type === 'PDF') {
+              setCreatePdfUrl(response.url);
+            } else {
+              setCreateMuxAssetId(response.url);
+            }
+            setUploadProgress(100);
+          } else {
+            setUploadError('Upload failed: Invalid response from server.');
+          }
+        } else {
+          setUploadError(`Upload failed with status: ${xhr.status}`);
+        }
+        setIsUploading(false);
+      };
+
+      xhr.onerror = () => {
+        setUploadError('Network error occurred during upload.');
+        setIsUploading(false);
+      };
+
+      xhr.send(formData);
+    } catch (err: any) {
+      setUploadError(err.message || 'An error occurred during file upload.');
+      setIsUploading(false);
+    }
+  };
 
   const fetchLessons = async () => {
     try {
@@ -23,6 +110,51 @@ export default function LessonsPage() {
       setError('Failed to fetch lessons.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateLesson = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createTitle.trim()) return;
+    try {
+      setIsSubmitting(true);
+      await apiRequest('admin/lessons/create', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: createTitle.trim(),
+          title_sw: createTitleSw.trim() || undefined,
+          subject: createSubject,
+          form_level: createFormLevel,
+          type: createType,
+          pdf_url: createType === 'PDF' ? createPdfUrl.trim() : undefined,
+          mux_asset_id: createType === 'VIDEO' ? (createMuxAssetId.trim() || undefined) : undefined,
+          is_free: createIsFree,
+          duration_sec: parseInt(createDurationMin) * 60,
+        }),
+      });
+      setShowCreateModal(false);
+      // Reset form
+      setCreateTitle('');
+      setCreateTitleSw('');
+      setCreateSubject('MATH');
+      setCreateFormLevel('FORM_1');
+      setCreateType('VIDEO');
+      setCreatePdfUrl('');
+      setCreateMuxAssetId('');
+      setCreateIsFree(true);
+      setCreateDurationMin('30');
+      setSelectedPdfFile(null);
+      setSelectedVideoFile(null);
+      setUploadProgress(null);
+      setUploadError('');
+      setPdfSourceMode('upload');
+      setVideoSourceMode('upload');
+      
+      fetchLessons();
+    } catch (err: any) {
+      alert(`Failed to create lesson: ${err.message}`);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -56,9 +188,14 @@ export default function LessonsPage() {
           </h1>
           <p className="text-sm mt-1 theme-text-secondary">Browse all lessons, manage publishing status, and review engagement metrics.</p>
         </div>
-        <button onClick={fetchLessons} className="flex items-center gap-2 px-4 py-2.5 theme-item-bg theme-item-hover border theme-border theme-text-secondary hover:theme-text-primary text-sm font-semibold rounded-xl transition-all duration-200">
-          <RefreshCw className="w-4 h-4" /> Refresh
-        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowCreateModal(true)} className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-indigo-600/20">
+            <Plus className="w-4 h-4" /> Add Lesson
+          </button>
+          <button onClick={fetchLessons} className="flex items-center gap-2 px-4 py-2.5 theme-item-bg theme-item-hover border theme-border theme-text-secondary hover:theme-text-primary text-sm font-semibold rounded-xl transition-all duration-200">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
       </div>
 
       {/* Quick Stats */}
@@ -189,6 +326,206 @@ export default function LessonsPage() {
           )}
         </div>
       </div>
+
+      {/* Create Lesson Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="glass-panel w-full max-w-2xl rounded-3xl border theme-border overflow-hidden shadow-2xl animate-in zoom-in duration-200 bg-[#090d16]">
+            {/* Header */}
+            <div className="p-6 border-b theme-border flex items-center justify-between bg-slate-100/50 dark:bg-[#0d1223]/30">
+              <h3 className="text-lg font-bold theme-text-primary flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-indigo-500" />
+                Upload New Class / Lesson
+              </h3>
+              <button onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg theme-text-secondary hover:theme-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleCreateLesson} className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Title EN */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Title (English) *</label>
+                  <input type="text" required value={createTitle} onChange={(e) => setCreateTitle(e.target.value)}
+                    placeholder="e.g. Introduction to Quadratic Equations"
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                </div>
+                {/* Title SW */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Title (Swahili)</label>
+                  <input type="text" value={createTitleSw} onChange={(e) => setCreateTitleSw(e.target.value)}
+                    placeholder="e.g. Utangulizi wa Milinganyo ya Kipeo cha Pili"
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Subject */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Subject Area</label>
+                  <select value={createSubject} onChange={(e) => setCreateSubject(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                    {['MATH', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'ENGLISH', 'KISWAHILI', 'HISTORY', 'GEOGRAPHY', 'ACCOUNTS'].map(sub => (
+                      <option key={sub} value={sub}>{sub}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Form Level */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Form Level</label>
+                  <select value={createFormLevel} onChange={(e) => setCreateFormLevel(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                    {['FORM_1', 'FORM_2', 'FORM_3', 'FORM_4', 'FORM_5', 'FORM_6', 'STD_1', 'STD_2', 'STD_3', 'STD_4', 'STD_5', 'STD_6', 'STD_7'].map(lvl => (
+                      <option key={lvl} value={lvl}>{lvl.replace('_', ' ')}</option>
+                    ))}
+                  </select>
+                </div>
+                {/* Type */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Content Type</label>
+                  <select value={createType} onChange={(e) => setCreateType(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                    <option value="VIDEO">VIDEO</option>
+                    <option value="PDF">PDF</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Duration */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Duration (Minutes)</label>
+                  <input type="number" required value={createDurationMin} onChange={(e) => setCreateDurationMin(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]" />
+                </div>
+                {/* Access */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold theme-text-secondary">Pricing / Access</label>
+                  <div className="flex items-center gap-4 mt-2">
+                    <label className="flex items-center gap-2 text-sm theme-text-primary cursor-pointer">
+                      <input type="radio" checked={createIsFree} onChange={() => setCreateIsFree(true)} className="text-indigo-600 focus:ring-indigo-500" />
+                      Free Access
+                    </label>
+                    <label className="flex items-center gap-2 text-sm theme-text-primary cursor-pointer">
+                      <input type="radio" checked={!createIsFree} onChange={() => setCreateIsFree(false)} className="text-indigo-600 focus:ring-indigo-500" />
+                      Premium Access
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Conditional Inputs */}
+              {createType === 'PDF' ? (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold theme-text-secondary">PDF Document Source</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={() => setPdfSourceMode('upload')}
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${pdfSourceMode === 'upload' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        Upload PDF to R2
+                      </button>
+                      <button type="button" onClick={() => setPdfSourceMode('url')}
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${pdfSourceMode === 'url' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        Enter URL manually
+                      </button>
+                    </div>
+                  </div>
+
+                  {pdfSourceMode === 'upload' ? (
+                    <div className="border border-dashed theme-border rounded-2xl p-6 text-center space-y-3 bg-[#0d1223]/30">
+                      <input type="file" accept="application/pdf" id="pdf-upload" className="hidden" onChange={(e) => handleFileChange(e, 'PDF')} />
+                      <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                        <FileText className="w-10 h-10 text-indigo-400 animate-pulse" />
+                        <span className="text-xs font-semibold theme-text-primary">
+                          {selectedPdfFile ? selectedPdfFile.name : 'Choose a PDF file to upload'}
+                        </span>
+                        <span className="text-[10px] theme-text-secondary opacity-60">Max size: 50MB</span>
+                      </label>
+                      
+                      {uploadProgress !== null && (
+                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
+                      )}
+
+                      {isUploading && <span className="text-[11px] text-indigo-400">Uploading to Cloudflare R2...</span>}
+                      {uploadError && <span className="text-[11px] text-rose-400">{uploadError}</span>}
+                      {createPdfUrl && !isUploading && <span className="text-[11px] text-emerald-400 font-medium">Uploaded! PDF URL generated successfully.</span>}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold theme-text-secondary">PDF Document URL *</label>
+                      <input type="url" required value={createPdfUrl} onChange={(e) => setCreatePdfUrl(e.target.value)}
+                        placeholder="https://pub-34ad9122863347229d18978333b69706.r2.dev/uploads/notes.pdf"
+                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold theme-text-secondary">Video Content Source</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={() => setVideoSourceMode('upload')}
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${videoSourceMode === 'upload' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        Upload Video to R2
+                      </button>
+                      <button type="button" onClick={() => setVideoSourceMode('url')}
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${videoSourceMode === 'url' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        Enter Video URL / ID manually
+                      </button>
+                    </div>
+                  </div>
+
+                  {videoSourceMode === 'upload' ? (
+                    <div className="border border-dashed theme-border rounded-2xl p-6 text-center space-y-3 bg-[#0d1223]/30">
+                      <input type="file" accept="video/mp4,video/mkv,video/webm" id="video-upload" className="hidden" onChange={(e) => handleFileChange(e, 'VIDEO')} />
+                      <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center gap-2">
+                        <Video className="w-10 h-10 text-indigo-400 animate-pulse" />
+                        <span className="text-xs font-semibold theme-text-primary">
+                          {selectedVideoFile ? selectedVideoFile.name : 'Choose a Video file (MP4/MKV) to upload'}
+                        </span>
+                        <span className="text-[10px] theme-text-secondary opacity-60">Max size: 250MB</span>
+                      </label>
+                      
+                      {uploadProgress !== null && (
+                        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                          <div className="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                        </div>
+                      )}
+
+                      {isUploading && <span className="text-[11px] text-indigo-400">Uploading to Cloudflare R2...</span>}
+                      {uploadError && <span className="text-[11px] text-rose-400">{uploadError}</span>}
+                      {createMuxAssetId && !isUploading && <span className="text-[11px] text-emerald-400 font-medium">Uploaded! Video URL/ID set to Cloudflare R2 resource.</span>}
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold theme-text-secondary">Video URL or Asset ID *</label>
+                      <input type="text" required value={createMuxAssetId} onChange={(e) => setCreateMuxAssetId(e.target.value)}
+                        placeholder="e.g. Mux Asset ID or https://pub-34ad9122863347229d18978333b69706.r2.dev/video.mp4"
+                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t theme-border">
+                <button type="button" onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 rounded-xl border theme-border theme-text-secondary hover:theme-text-primary text-sm font-semibold transition-colors">
+                  Cancel
+                </button>
+                <button type="submit" disabled={isSubmitting}
+                  className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-600/50 text-white rounded-xl text-sm font-semibold shadow-lg shadow-indigo-600/20 transition-all">
+                  {isSubmitting ? 'Uploading...' : 'Upload Lesson'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

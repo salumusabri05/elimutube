@@ -10,10 +10,21 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:mobile/main.dart';
 
+import 'package:provider/provider.dart';
+import 'package:mobile/services/auth_service.dart';
+
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ],
+        child: const ElimuTubeApp(),
+      ),
+    );
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

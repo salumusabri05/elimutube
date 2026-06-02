@@ -1,7 +1,10 @@
-import { Controller, Get, Post, Body, UnauthorizedException, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, UnauthorizedException, Param, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
 import { PayoutStatus, PaymentStatus } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Controller()
 export class AppController {
@@ -13,6 +16,71 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Post('admin/upload-asset')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadAsset(@UploadedFile() file: any) {
+    if (!file) {
+      throw new Error('No file provided');
+    }
+
+    const fileExt = path.extname(file.originalname);
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+
+    const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-34ad9122863347229d18978333b69706.r2.dev';
+
+    // If R2 credentials are provided, perform actual upload to Cloudflare R2
+    if (accessKeyId && secretAccessKey) {
+      try {
+        const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+        const s3 = new S3Client({
+          endpoint: 'https://e2e18bf082598b060cbc6004d62bb96f.r2.cloudflarestorage.com',
+          region: 'auto',
+          credentials: {
+            accessKeyId,
+            secretAccessKey,
+          },
+        });
+
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: 'elimu',
+            Key: uniqueName,
+            Body: file.buffer,
+            ContentType: file.mimetype,
+          }),
+        );
+
+        return {
+          success: true,
+          url: `${r2PublicUrl}/${uniqueName}`,
+          fileName: uniqueName,
+        };
+      } catch (err: any) {
+        console.error('R2 upload failed, falling back to local storage:', err);
+      }
+    }
+
+    // Fallback: Save file locally on disk for development/testing
+    try {
+      const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      const filePath = path.join(uploadDir, uniqueName);
+      fs.writeFileSync(filePath, file.buffer);
+
+      return {
+        success: true,
+        url: `${r2PublicUrl}/${uniqueName}`,
+        fileName: uniqueName,
+      };
+    } catch (err: any) {
+      throw new Error(`Failed to upload asset: ${err.message}`);
+    }
   }
 
   @Post('auth/login')
@@ -296,6 +364,44 @@ export class AppController {
     return { success: true };
   }
 
+  @Post('admin/lessons/create')
+  async createLesson(@Body() body: any) {
+    let teacherId = body.teacher_id;
+    if (!teacherId) {
+      const teacher = await this.prisma.user.findFirst({
+        where: { roles: { has: 'TEACHER' } },
+      });
+      teacherId = teacher?.id;
+    }
+    if (!teacherId) {
+      const defaultTeacher = await this.prisma.user.create({
+        data: {
+          email: 'teacher@elimutube.com',
+          roles: ['TEACHER'],
+          active_role: 'TEACHER',
+          display_name: 'Default Teacher',
+        },
+      });
+      teacherId = defaultTeacher.id;
+    }
+
+    return this.prisma.lesson.create({
+      data: {
+        teacher_id: teacherId,
+        title: body.title,
+        title_sw: body.title_sw,
+        type: body.type || 'VIDEO',
+        subject: body.subject,
+        form_level: body.form_level,
+        is_free: body.is_free ?? true,
+        duration_sec: body.duration_sec ?? 1800,
+        mux_asset_id: body.mux_asset_id || 'mock_mux_asset_id',
+        pdf_url: body.pdf_url,
+        published_at: new Date(),
+      },
+    });
+  }
+
   @Post('admin/lessons/:id/update')
   async updateLesson(@Param('id') id: string, @Body() body: any) {
     const data = { ...body };
@@ -452,6 +558,8 @@ export class AppController {
         question_text_en: qq.question_text_en,
         question_text_sw: qq.question_text_sw,
         correct_answer_index: qq.correct_answer_index,
+        question_type: qq.question_type,
+        correct_answer_text: qq.correct_answer_text,
         options: qq.quiz_options.sort((a, b) => a.position - b.position).map(o => ({
           id: o.id,
           option_text: o.option_text,
@@ -463,6 +571,44 @@ export class AppController {
         ? Math.round(q.quiz_results.reduce((sum, r) => sum + r.score, 0) / q.quiz_results.length)
         : 0,
     }));
+  }
+
+  @Post('quizzes/create')
+  async createQuiz(@Body() body: any) {
+    const { lesson_id, questions } = body;
+    const quiz = await this.prisma.quiz.create({
+      data: {
+        lesson_id,
+        generated_by: 'MANUAL',
+      },
+    });
+
+    for (const q of questions) {
+      const question = await this.prisma.quizQuestion.create({
+        data: {
+          quiz_id: quiz.id,
+          question_text_en: q.question_text_en,
+          question_text_sw: q.question_text_sw || null,
+          correct_answer_index: q.correct_answer_index !== undefined ? q.correct_answer_index : null,
+          question_type: q.question_type || 'MULTIPLE_CHOICE',
+          correct_answer_text: q.correct_answer_text || null,
+        },
+      });
+
+      if (q.options && Array.isArray(q.options) && q.question_type === 'MULTIPLE_CHOICE') {
+        for (let i = 0; i < q.options.length; i++) {
+          await this.prisma.quizOption.create({
+            data: {
+              question_id: question.id,
+              option_text: q.options[i],
+              position: i,
+            },
+          });
+        }
+      }
+    }
+
+    return { success: true, quiz_id: quiz.id };
   }
 
   @Post('quizzes/:id/delete')

@@ -7,6 +7,8 @@ class AppTheme {
   static const Color secondary = Color(0xFF1EB53A); // Tanzania Green
   static const Color accent = Color(0xFFFFD700); // Gold
   static const Color background = Color(0xFFF8F9FA); // Surface
+  static const Color skyBlue = Color(0xFF2980B9);
+  static const Color teal = Color(0xFF008080);
 
   // Neutral Colors
   static const Color surface = Color(0xFFFFFFFF);
@@ -107,21 +109,22 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.grey[200]!, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: error, width: 1),
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: error, width: 1.5),
         ),
       ),
     );
@@ -218,17 +221,22 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFF0D1223),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.08), width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide.none,
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.white.withOpacity(0.08), width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(30),
           borderSide: const BorderSide(color: Color(0xFFA7C8FF), width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
         ),
       ),
     );

@@ -11,11 +11,15 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = typeof window !== 'undefined' ? localStorage.getItem('adminToken') : null;
   const API_BASE = getApiBase();
   
-  const headers = {
-    'Content-Type': 'application/json',
+  const headers: Record<string, string> = {
     ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    ...options.headers,
   };
+
+  if (!(options.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  Object.assign(headers, options.headers);
 
   const response = await fetch(`${API_BASE}/${endpoint.replace(/^\//, '')}`, {
     ...options,

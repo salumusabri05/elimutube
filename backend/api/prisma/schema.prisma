@@ -190,7 +190,9 @@ model QuizQuestion {
   quiz_id              String
   question_text_en     String
   question_text_sw     String?
-  correct_answer_index Int
+  correct_answer_index Int?
+  question_type        String   @default("MULTIPLE_CHOICE") // MULTIPLE_CHOICE, TEXT_ANSWER, PHOTO_UPLOAD
+  correct_answer_text  String?
 
   quiz         Quiz         @relation(fields: [quiz_id], references: [id])
   quiz_options QuizOption[]
