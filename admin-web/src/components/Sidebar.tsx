@@ -11,8 +11,14 @@ import {
   ShieldAlert,
   Bell,
   Settings,
-  HelpCircle,
-  Database
+  Database,
+  GraduationCap,
+  TrendingUp,
+  MessageSquare,
+  Brain,
+  Subtitles,
+  BarChart3,
+  Wallet,
 } from 'lucide-react';
 
 const menuGroups = [
@@ -20,23 +26,36 @@ const menuGroups = [
     title: 'Core Management',
     items: [
       { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+      { name: 'Students', href: '/students', icon: GraduationCap },
       { name: 'Teachers', href: '/teachers', icon: Users },
-      { name: 'Lessons & Content', href: '/content', icon: BookOpen },
+      { name: 'Lessons', href: '/lessons', icon: BookOpen },
+    ]
+  },
+  {
+    title: 'Content & Learning',
+    items: [
+      { name: 'Quizzes', href: '/quizzes', icon: MessageSquare },
+      { name: 'AI Summaries', href: '/ai-summaries', icon: Brain },
+      { name: 'Captions', href: '/captions', icon: Subtitles },
+      { name: 'Content Reports', href: '/content', icon: ShieldAlert },
     ]
   },
   {
     title: 'Operations',
     items: [
       { name: 'Live Classes', href: '/live', icon: Video },
+      { name: 'Subscriptions', href: '/subscriptions', icon: Wallet },
       { name: 'Payouts', href: '/payouts', icon: CreditCard },
       { name: 'Moderation', href: '/moderation', icon: ShieldAlert },
     ]
   },
   {
-    title: 'System',
+    title: 'Analytics & System',
     items: [
+      { name: 'Revenue Analytics', href: '/analytics', icon: TrendingUp },
+      { name: 'Student Analytics', href: '/student-analytics', icon: BarChart3 },
       { name: 'Notifications', href: '/notifications', icon: Bell },
-      { name: 'Database Status', href: '/database', icon: Database },
+      { name: 'Database Explorer', href: '/database', icon: Database },
     ]
   }
 ];

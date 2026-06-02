@@ -195,6 +195,454 @@ export class AppController {
   }
 
 
+  // ============================================================
+  // STUDENTS ENDPOINTS
+  // ============================================================
+
+  @Get('students')
+  async getStudents() {
+    const students = await this.prisma.user.findMany({
+      where: { roles: { has: 'STUDENT' as any } },
+      include: {
+        lesson_progress: true,
+        quiz_results: true,
+        student_subscriptions: true,
+        payments: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return students.map(s => ({
+      id: s.id,
+      email: s.email,
+      phone: s.phone,
+      display_name: s.display_name,
+      avatar_url: s.avatar_url,
+      created_at: s.created_at,
+      verified_at: s.verified_at,
+      active_role: s.active_role,
+      lessons_completed: s.lesson_progress.filter(lp => lp.completed).length,
+      total_watch_seconds: s.lesson_progress.reduce((sum, lp) => sum + lp.watch_seconds, 0),
+      quizzes_taken: s.quiz_results.length,
+      avg_quiz_score: s.quiz_results.length > 0 
+        ? Math.round(s.quiz_results.reduce((sum, qr) => sum + qr.score, 0) / s.quiz_results.length)
+        : 0,
+      active_subscriptions: s.student_subscriptions.filter(sub => sub.status === 'ACTIVE').length,
+      total_spent: s.payments.filter(p => p.status === 'SUCCESS').reduce((sum, p) => sum + p.amount_tsh, 0),
+    }));
+  }
+
+  // ============================================================
+  // LESSONS MANAGEMENT ENDPOINTS
+  // ============================================================
+
+  @Get('admin/lessons')
+  async getAdminLessons() {
+    const lessons = await this.prisma.lesson.findMany({
+      include: {
+        teacher: true,
+        quizzes: true,
+        content_reports: true,
+        content_ratings: true,
+        lesson_progress: true,
+        ai_summaries: true,
+        captions: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return lessons.map(l => ({
+      id: l.id,
+      title: l.title,
+      title_sw: l.title_sw,
+      type: l.type,
+      subject: l.subject,
+      form_level: l.form_level,
+      is_free: l.is_free,
+      duration_sec: l.duration_sec,
+      mux_asset_id: l.mux_asset_id,
+      pdf_url: l.pdf_url,
+      published_at: l.published_at,
+      created_at: l.created_at,
+      teacher_name: l.teacher.display_name || l.teacher.email,
+      teacher_id: l.teacher_id,
+      quiz_count: l.quizzes.length,
+      report_count: l.content_reports.filter(r => !r.reviewed_at).length,
+      avg_rating: l.content_ratings.length > 0 
+        ? (l.content_ratings.reduce((sum, r) => sum + r.rating, 0) / l.content_ratings.length).toFixed(1)
+        : null,
+      total_views: l.lesson_progress.length,
+      completions: l.lesson_progress.filter(lp => lp.completed).length,
+      has_ai_summary: l.ai_summaries.length > 0,
+      has_captions: l.captions.length > 0,
+    }));
+  }
+
+  @Post('admin/lessons/:id/unpublish')
+  async unpublishLesson(@Param('id') id: string) {
+    await this.prisma.lesson.update({
+      where: { id },
+      data: { published_at: null },
+    });
+    return { success: true };
+  }
+
+  @Post('admin/lessons/:id/publish')
+  async publishLesson(@Param('id') id: string) {
+    await this.prisma.lesson.update({
+      where: { id },
+      data: { published_at: new Date() },
+    });
+    return { success: true };
+  }
+
+  @Post('admin/lessons/:id/update')
+  async updateLesson(@Param('id') id: string, @Body() body: any) {
+    const data = { ...body };
+    delete data.id;
+    return this.prisma.lesson.update({
+      where: { id },
+      data,
+    });
+  }
+
+  // ============================================================
+  // SUBSCRIPTIONS ENDPOINTS
+  // ============================================================
+
+  @Get('subscriptions')
+  async getSubscriptions() {
+    const subs = await this.prisma.subscription.findMany({
+      include: {
+        student: true,
+        teacher: true,
+        plan: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return subs.map(s => ({
+      id: s.id,
+      student_name: s.student.display_name || s.student.email,
+      student_id: s.student_id,
+      teacher_name: s.teacher.display_name || s.teacher.email,
+      teacher_id: s.teacher_id,
+      plan_description: s.plan?.description || 'Direct Subscription',
+      price_tsh: s.price_tsh,
+      status: s.status,
+      payment_method: s.payment_method,
+      period_start: s.period_start,
+      period_end: s.period_end,
+      auto_renew: s.auto_renew,
+      created_at: s.created_at,
+    }));
+  }
+
+  @Post('subscriptions/:id/cancel')
+  async cancelSubscription(@Param('id') id: string) {
+    await this.prisma.subscription.update({
+      where: { id },
+      data: { status: 'CANCELLED' },
+    });
+    return { success: true };
+  }
+
+  // ============================================================
+  // REVENUE ANALYTICS ENDPOINTS
+  // ============================================================
+
+  @Get('revenue/analytics')
+  async getRevenueAnalytics() {
+    const payments = await this.prisma.payment.findMany({
+      where: { status: PaymentStatus.SUCCESS },
+      include: { student: true },
+      orderBy: { created_at: 'asc' },
+    });
+
+    // Monthly revenue aggregation
+    const monthlyMap = new Map<string, { revenue: number; count: number }>();
+    payments.forEach(p => {
+      const month = new Date(p.created_at).toISOString().substring(0, 7);
+      const existing = monthlyMap.get(month) || { revenue: 0, count: 0 };
+      existing.revenue += p.amount_tsh;
+      existing.count += 1;
+      monthlyMap.set(month, existing);
+    });
+
+    const monthlyRevenue = Array.from(monthlyMap.entries()).map(([month, data]) => ({
+      month,
+      revenue: data.revenue,
+      transactions: data.count,
+      platformShare: Math.round(data.revenue * 0.3),
+      teacherShare: Math.round(data.revenue * 0.7),
+    }));
+
+    // Subscription stats
+    const activeSubs = await this.prisma.subscription.count({ where: { status: 'ACTIVE' } });
+    const cancelledSubs = await this.prisma.subscription.count({ where: { status: 'CANCELLED' } });
+    const expiredSubs = await this.prisma.subscription.count({ where: { status: 'EXPIRED' } });
+
+    // User growth
+    const users = await this.prisma.user.findMany({ select: { created_at: true, roles: true } });
+    const userGrowthMap = new Map<string, { students: number; teachers: number }>();
+    users.forEach(u => {
+      const month = new Date(u.created_at).toISOString().substring(0, 7);
+      const existing = userGrowthMap.get(month) || { students: 0, teachers: 0 };
+      if (u.roles.includes('TEACHER' as any)) existing.teachers += 1;
+      if (u.roles.includes('STUDENT' as any)) existing.students += 1;
+      userGrowthMap.set(month, existing);
+    });
+    const userGrowth = Array.from(userGrowthMap.entries()).map(([month, data]) => ({
+      month, ...data,
+    }));
+
+    const totalRevenue = payments.reduce((sum, p) => sum + p.amount_tsh, 0);
+    const totalPayments = payments.length;
+
+    // Top spending students
+    const studentSpend = new Map<string, { name: string; total: number }>();
+    payments.forEach(p => {
+      const key = p.student_id;
+      const existing = studentSpend.get(key) || { name: p.student.display_name || p.student.email, total: 0 };
+      existing.total += p.amount_tsh;
+      studentSpend.set(key, existing);
+    });
+    const topStudents = Array.from(studentSpend.entries())
+      .map(([id, data]) => ({ id, ...data }))
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 10);
+
+    return {
+      totalRevenue,
+      totalPayments,
+      platformShare: Math.round(totalRevenue * 0.3),
+      teacherShare: Math.round(totalRevenue * 0.7),
+      monthlyRevenue,
+      subscriptions: { active: activeSubs, cancelled: cancelledSubs, expired: expiredSubs },
+      userGrowth,
+      topStudents,
+    };
+  }
+
+  // ============================================================
+  // QUIZ MANAGEMENT ENDPOINTS
+  // ============================================================
+
+  @Get('quizzes')
+  async getQuizzes() {
+    const quizzes = await this.prisma.quiz.findMany({
+      include: {
+        lesson: { include: { teacher: true } },
+        quiz_questions: { include: { quiz_options: true } },
+        quiz_results: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return quizzes.map(q => ({
+      id: q.id,
+      lesson_id: q.lesson_id,
+      lesson_title: q.lesson.title,
+      teacher_name: q.lesson.teacher.display_name || q.lesson.teacher.email,
+      generated_by: q.generated_by,
+      created_at: q.created_at,
+      question_count: q.quiz_questions.length,
+      questions: q.quiz_questions.map(qq => ({
+        id: qq.id,
+        question_text_en: qq.question_text_en,
+        question_text_sw: qq.question_text_sw,
+        correct_answer_index: qq.correct_answer_index,
+        options: qq.quiz_options.sort((a, b) => a.position - b.position).map(o => ({
+          id: o.id,
+          option_text: o.option_text,
+          position: o.position,
+        })),
+      })),
+      attempts: q.quiz_results.length,
+      avg_score: q.quiz_results.length > 0
+        ? Math.round(q.quiz_results.reduce((sum, r) => sum + r.score, 0) / q.quiz_results.length)
+        : 0,
+    }));
+  }
+
+  @Post('quizzes/:id/delete')
+  async deleteQuiz(@Param('id') id: string) {
+    // Delete quiz results, options, questions, then quiz
+    const questions = await this.prisma.quizQuestion.findMany({ where: { quiz_id: id } });
+    for (const q of questions) {
+      await this.prisma.quizOption.deleteMany({ where: { question_id: q.id } });
+    }
+    await this.prisma.quizResult.deleteMany({ where: { quiz_id: id } });
+    await this.prisma.quizQuestion.deleteMany({ where: { quiz_id: id } });
+    await this.prisma.quiz.delete({ where: { id } });
+    return { success: true };
+  }
+
+  // ============================================================
+  // AI SUMMARY ENDPOINTS
+  // ============================================================
+
+  @Get('ai-summaries')
+  async getAiSummaries() {
+    const summaries = await this.prisma.aiSummary.findMany({
+      include: {
+        lesson: { include: { teacher: true } },
+      },
+      orderBy: { generated_at: 'desc' },
+    });
+
+    return summaries.map(s => ({
+      id: s.id,
+      lesson_id: s.lesson_id,
+      lesson_title: s.lesson.title,
+      teacher_name: s.lesson.teacher.display_name || s.lesson.teacher.email,
+      subject: s.lesson.subject,
+      form_level: s.lesson.form_level,
+      summary_en: s.summary_en,
+      summary_sw: s.summary_sw,
+      generated_at: s.generated_at,
+    }));
+  }
+
+  @Post('ai-summaries/:id/update')
+  async updateAiSummary(@Param('id') id: string, @Body() body: any) {
+    return this.prisma.aiSummary.update({
+      where: { id },
+      data: {
+        summary_en: body.summary_en,
+        summary_sw: body.summary_sw,
+      },
+    });
+  }
+
+  @Post('ai-summaries/:id/delete')
+  async deleteAiSummary(@Param('id') id: string) {
+    await this.prisma.aiSummary.delete({ where: { id } });
+    return { success: true };
+  }
+
+  // ============================================================
+  // CAPTIONS ENDPOINTS
+  // ============================================================
+
+  @Get('captions')
+  async getCaptions() {
+    const captions = await this.prisma.caption.findMany({
+      include: {
+        lesson: { include: { teacher: true } },
+      },
+    });
+
+    return captions.map(c => ({
+      id: c.id,
+      lesson_id: c.lesson_id,
+      lesson_title: c.lesson.title,
+      teacher_name: c.lesson.teacher.display_name || c.lesson.teacher.email,
+      language: c.language,
+      vtt_url: c.vtt_url,
+      source: c.source,
+    }));
+  }
+
+  @Post('captions/create')
+  async createCaption(@Body() body: any) {
+    return this.prisma.caption.create({ data: body });
+  }
+
+  @Post('captions/:id/delete')
+  async deleteCaption(@Param('id') id: string) {
+    await this.prisma.caption.delete({ where: { id } });
+    return { success: true };
+  }
+
+  // ============================================================
+  // STUDENT ANALYTICS ENDPOINTS
+  // ============================================================
+
+  @Get('student-analytics')
+  async getStudentAnalytics() {
+    const progress = await this.prisma.lessonProgress.findMany({
+      include: {
+        student: true,
+        lesson: true,
+      },
+    });
+
+    const quizResults = await this.prisma.quizResult.findMany({
+      include: {
+        student: true,
+        quiz: { include: { lesson: true } },
+      },
+      orderBy: { completed_at: 'desc' },
+    });
+
+    // Aggregate by subject
+    const subjectStats = new Map<string, { views: number; completions: number; totalWatch: number }>();
+    progress.forEach(p => {
+      const subj = p.lesson.subject;
+      const existing = subjectStats.get(subj) || { views: 0, completions: 0, totalWatch: 0 };
+      existing.views += 1;
+      if (p.completed) existing.completions += 1;
+      existing.totalWatch += p.watch_seconds;
+      subjectStats.set(subj, existing);
+    });
+
+    const subjectBreakdown = Array.from(subjectStats.entries()).map(([subject, data]) => ({
+      subject,
+      ...data,
+      avgWatchMin: Math.round(data.totalWatch / (data.views || 1) / 60),
+      completionRate: data.views > 0 ? Math.round((data.completions / data.views) * 100) : 0,
+    }));
+
+    // Score distribution
+    const scoreRanges = { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 };
+    quizResults.forEach(qr => {
+      if (qr.score <= 20) scoreRanges['0-20']++;
+      else if (qr.score <= 40) scoreRanges['21-40']++;
+      else if (qr.score <= 60) scoreRanges['41-60']++;
+      else if (qr.score <= 80) scoreRanges['61-80']++;
+      else scoreRanges['81-100']++;
+    });
+
+    // Top performers
+    const studentScores = new Map<string, { name: string; total: number; count: number }>();
+    quizResults.forEach(qr => {
+      const key = qr.student_id;
+      const existing = studentScores.get(key) || { name: qr.student.display_name || qr.student.email, total: 0, count: 0 };
+      existing.total += qr.score;
+      existing.count += 1;
+      studentScores.set(key, existing);
+    });
+    const topPerformers = Array.from(studentScores.entries())
+      .map(([id, data]) => ({ id, name: data.name, avgScore: Math.round(data.total / data.count), quizzesTaken: data.count }))
+      .sort((a, b) => b.avgScore - a.avgScore)
+      .slice(0, 10);
+
+    return {
+      totalProgress: progress.length,
+      totalCompleted: progress.filter(p => p.completed).length,
+      totalWatchHours: Math.round(progress.reduce((sum, p) => sum + p.watch_seconds, 0) / 3600),
+      totalQuizAttempts: quizResults.length,
+      avgQuizScore: quizResults.length > 0 
+        ? Math.round(quizResults.reduce((sum, r) => sum + r.score, 0) / quizResults.length)
+        : 0,
+      subjectBreakdown,
+      scoreDistribution: scoreRanges,
+      topPerformers,
+      recentQuizResults: quizResults.slice(0, 20).map(qr => ({
+        id: qr.id,
+        student_name: qr.student.display_name || qr.student.email,
+        lesson_title: qr.quiz.lesson.title,
+        score: qr.score,
+        completed_at: qr.completed_at,
+      })),
+    };
+  }
+
+  // ============================================================
+  // DATABASE EXPLORER ENDPOINTS (generic CRUD)
+  // ============================================================
+
   @Get('database/tables')
   async getTables() {
     return [
