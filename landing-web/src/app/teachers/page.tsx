@@ -28,16 +28,28 @@ export default function TeachersMarketingPage() {
       <div className="mx-auto max-w-5xl flex flex-col gap-16">
         
         {/* HERO SECTION */}
-        <div className="text-center flex flex-col gap-5 max-w-3xl mx-auto">
-          <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
-            {t("Teach. Inspire. Earn.", "Fundisha. Hamasisha. Pata Kipato.")}
-          </h1>
-          <p className="text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-            {t(
-              "Join ElimuTube to create your subject channel, upload video lectures, and support thousands of students across Tanzania. Set your own subscription fees and earn 70% of the revenue.",
-              "Jiunge na ElimuTube kufungua chaneli ya somo lako, weka video za mafundisho na kusaidia maelfu ya wanafunzi Tanzania. Panga bei yako ya ada na upokee 70% ya mapato."
-            )}
-          </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 flex flex-col gap-5 text-center lg:text-left">
+            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
+              {t("Teach. Inspire. Earn.", "Fundisha. Hamasisha. Pata Kipato.")}
+            </h1>
+            <p className="text-lg text-slate-650 dark:text-slate-400 leading-relaxed">
+              {t(
+                "Join ElimuTube to create your subject channel, upload video lectures, and support thousands of students across Tanzania. Set your own subscription fees and earn 70% of the revenue.",
+                "Jiunge na ElimuTube kufungua chaneli ya somo lako, weka video za mafundisho na kusaidia maelfu ya wanafunzi Tanzania. Panga bei yako ya ada na upokee 70% ya mapato."
+              )}
+            </p>
+          </div>
+          <div className="lg:col-span-5 relative mt-6 lg:mt-0 hover:scale-[1.01] transition duration-300">
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-indigo-500/20 to-violet-500/20 opacity-70 blur-xl dark:opacity-45" />
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xl">
+              <img 
+                src="/teacher_peparing_lesson.jpg" 
+                alt="Teacher preparing a lesson on ElimuTube" 
+                className="w-full h-auto object-cover aspect-4/3 sm:aspect-video lg:aspect-4/3"
+              />
+            </div>
+          </div>
         </div>
 
         {/* WHY TEACH ON ELIMUTUBE */}

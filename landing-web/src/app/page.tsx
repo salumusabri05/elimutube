@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { 
   Play, 
+  Pause,
   Sparkles, 
   BookOpen, 
   Users, 
@@ -22,7 +23,9 @@ import {
   ChevronRight,
   TrendingUp,
   Activity,
-  ArrowUpRight
+  ArrowUpRight,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

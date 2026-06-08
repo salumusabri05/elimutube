@@ -53,6 +53,7 @@ export default function Header() {
     { href: "/teachers", labelEn: "Teachers", labelSw: "Walimu" },
     { href: "/live", labelEn: "Live Classes", labelSw: "Vipindi vya Live" },
     { href: "/ai", labelEn: "AI Tutor", labelSw: "Msaidizi wa AI" },
+    { href: "/about", labelEn: "About Us", labelSw: "Kuhusu Sisi" },
   ];
 
   return (

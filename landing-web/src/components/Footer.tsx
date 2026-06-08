@@ -58,6 +58,7 @@ export default function Footer() {
             <Link href="/teachers" className="hover:text-amber-500 transition">{t("Teachers", "Walimu")}</Link>
             <Link href="/live" className="hover:text-amber-500 transition">{t("Live", "Live")}</Link>
             <Link href="/ai" className="hover:text-amber-500 transition">{t("AI", "AI")}</Link>
+            <Link href="/about" className="hover:text-amber-500 transition">{t("About", "Kuhusu Sisi")}</Link>
           </div>
 
           {/* Column 3: App Store / Google Play Logos */}

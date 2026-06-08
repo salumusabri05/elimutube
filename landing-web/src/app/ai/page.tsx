@@ -19,21 +19,31 @@ export default function AIPage() {
         <div className="absolute top-0 right-1/4 -z-10 size-[350px] rounded-full bg-amber-500/10 blur-3xl" />
         <div className="absolute top-20 left-1/4 -z-10 size-[350px] rounded-full bg-indigo-500/10 blur-3xl" />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative text-center flex flex-col gap-6">
-          
-          <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl max-w-4xl mx-auto leading-tight">
-            {t(
-              "Top Teachers Powered by Smart AI Support",
-              "Walimu Bingwa Wakiwezeshwa na Nguvu ya AI"
-            )}
-          </h1>
-          
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-slate-600 dark:text-slate-400 leading-relaxed">
-            {t(
-              "We believe AI should not replace human teachers. Instead, on ElimuTube, teachers teach the syllabus and our AI tutor explains, translates, and designs quizzes to clarify doubts instantly.",
-              "Tunaamini AI haipaswi kuchukua nafasi ya mwalimu wa kibinadamu. Badala yake, kwenye ElimuTube, walimu wanafundisha mada na msaidizi wa AI anakusaidia kuelewa, kutafsiri, na kukupa maswali ya kufanya mazoezi."
-            )}
-          </p>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="lg:col-span-7 flex flex-col gap-5 text-center lg:text-left">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white sm:text-5xl lg:text-6xl leading-tight">
+              {t(
+                "Top Teachers Powered by Smart AI Support",
+                "Walimu Bingwa Wakiwezeshwa na Nguvu ya AI"
+              )}
+            </h1>
+            <p className="text-base sm:text-lg text-slate-650 dark:text-slate-400 leading-relaxed">
+              {t(
+                "We believe AI should not replace human teachers. Instead, on ElimuTube, teachers teach the syllabus and our AI tutor explains, translates, and designs quizzes to clarify doubts instantly.",
+                "Tunaamini AI haipaswi kuchukua nafasi ya mwalimu wa kibinadamu. Badala yake, kwenye ElimuTube, walimu wanafundisha mada na msaidizi wa AI anakusaidia kuelewa, kutafsiri, na kukupa maswali ya kufanya mazoezi."
+              )}
+            </p>
+          </div>
+          <div className="lg:col-span-5 relative mt-6 lg:mt-0 hover:scale-[1.01] transition duration-300">
+            <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-amber-500/20 to-indigo-500/20 opacity-70 blur-xl dark:opacity-45" />
+            <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-2xl">
+              <img 
+                src="/studentwithaitutor.png" 
+                alt="Student studying with ElimuTube AI Tutor" 
+                className="w-full h-auto object-cover aspect-4/3 sm:aspect-video lg:aspect-4/3"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
