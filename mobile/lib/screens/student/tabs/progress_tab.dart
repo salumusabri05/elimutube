@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:glass_kit/glass_kit.dart';
 import '../../../theme/app_theme.dart';
 
 class ProgressTab extends StatelessWidget {
@@ -12,15 +13,20 @@ class ProgressTab extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Streak Card
-          Container(
+          GlassContainer(
+            width: double.infinity,
             padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.secondary, Color(0xFFE67E22)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20),
+            blur: 10,
+            gradient: LinearGradient(
+              colors: [AppTheme.secondary.withOpacity(0.9), const Color(0xFFE67E22).withOpacity(0.9)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderGradient: LinearGradient(
+              colors: [Colors.white.withOpacity(0.4), Colors.white.withOpacity(0.1)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
             child: const Row(
               children: [
@@ -53,18 +59,28 @@ class ProgressTab extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           const SizedBox(height: 12),
-          Card(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            child: const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _StatItem(value: '3', label: 'Walimu'),
-                  _StatItem(value: '5', label: 'Masomo Leo'),
-                  _StatItem(value: '82%', label: 'Kamilisha'),
-                ],
-              ),
+          GlassContainer(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16.0),
+            borderRadius: BorderRadius.circular(16),
+            blur: 8,
+            gradient: LinearGradient(
+              colors: [Colors.white.withOpacity(0.1), Colors.white.withOpacity(0.05)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderGradient: LinearGradient(
+              colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.05)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _StatItem(value: '3', label: 'Walimu'),
+                _StatItem(value: '5', label: 'Masomo Leo'),
+                _StatItem(value: '82%', label: 'Kamilisha'),
+              ],
             ),
           ),
           const SizedBox(height: 24),
@@ -115,7 +131,7 @@ class _StatItem extends StatelessWidget {
       children: [
         Text(
           value,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.primary),
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppTheme.skyBlue),
         ),
         const SizedBox(height: 4),
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
@@ -141,11 +157,23 @@ class _SubjectProgressItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
+      child: GlassContainer(
+        width: double.infinity,
         padding: const EdgeInsets.all(16.0),
+        borderRadius: BorderRadius.circular(12),
+        blur: 8,
+        gradient: LinearGradient(
+          colors: [Colors.white.withOpacity(0.08), Colors.white.withOpacity(0.02)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderGradient: LinearGradient(
+          colors: [Colors.white.withOpacity(0.2), Colors.white.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -164,7 +192,7 @@ class _SubjectProgressItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
               child: LinearProgressIndicator(
                 value: percent,
-                backgroundColor: Colors.grey[200],
+                backgroundColor: Colors.white.withOpacity(0.1),
                 valueColor: AlwaysStoppedAnimation<Color>(color),
                 minHeight: 8,
               ),

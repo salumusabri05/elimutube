@@ -428,7 +428,7 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen> {
                   )
                 else ...[
                   Card(
-                    color: Colors.emerald[50],
+                    color: Colors.green[50],
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: const BorderSide(color: Colors.green, width: 0.5),
