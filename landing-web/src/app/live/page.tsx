@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Tv, 
   MessageCircle, 
@@ -21,10 +21,91 @@ import { useLanguage } from "@/context/LanguageContext";
 export default function LiveMarketingPage() {
   const { t, language } = useLanguage();
 
+  // Countdown Timer State
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 14, seconds: 35 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) {
+          return { ...prev, seconds: prev.seconds - 1 };
+        } else if (prev.minutes > 0) {
+          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
+        } else if (prev.hours > 0) {
+          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        } else {
+          // Reset to a new countdown interval if expired
+          return { hours: 3, minutes: 45, seconds: 0 };
+        }
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 transition-colors duration-200 py-16 px-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-5xl flex flex-col gap-16">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-200 transition-colors duration-200 py-24 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl flex flex-col gap-12">
         
+        {/* COUNTDOWN TIMER BANNER */}
+        <div className="relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-r from-amber-500/10 via-indigo-500/5 to-transparent p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_4px_20px_rgba(245,158,11,0.05)] animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-4 text-center md:text-left flex-col sm:flex-row">
+            <div className="size-12 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-500 flex items-center justify-center shrink-0">
+              <Radio className="size-6 animate-pulse" />
+            </div>
+            <div>
+              <Badge className="bg-amber-500 text-slate-950 font-bold border-none text-[9px] uppercase tracking-wider mb-1">
+                {t("Next Live Session", "Kipindi Kijacho cha Live")}
+              </Badge>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                {t("NECTA Form 4 Physics: Electromagnetism", "Form 4 Physics: Usumaku-umeme (NECTA Revision)")}
+              </h3>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {t("Instructor: Mwalimu Halima Juma • Class includes Live Chat Q&A", "Mwalimu: Halima Juma • Kipindi kitahusisha Maswali na Majibu")}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 shrink-0 flex-col sm:flex-row">
+            <div className="flex gap-2 items-center">
+              {/* Hours */}
+              <div className="flex flex-col items-center">
+                <div className="size-12 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-950 font-mono font-black text-lg flex items-center justify-center shadow-md">
+                  {String(timeLeft.hours).padStart(2, "0")}
+                </div>
+                <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase">Hrs</span>
+              </div>
+              
+              <span className="text-lg font-bold -mt-3 text-slate-400 animate-pulse">:</span>
+
+              {/* Minutes */}
+              <div className="flex flex-col items-center">
+                <div className="size-12 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-950 font-mono font-black text-lg flex items-center justify-center shadow-md">
+                  {String(timeLeft.minutes).padStart(2, "0")}
+                </div>
+                <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase">Mins</span>
+              </div>
+
+              <span className="text-lg font-bold -mt-3 text-slate-400 animate-pulse">:</span>
+
+              {/* Seconds */}
+              <div className="flex flex-col items-center">
+                <div className="size-12 rounded-xl bg-amber-500 text-slate-950 font-mono font-black text-lg flex items-center justify-center shadow-md">
+                  {String(timeLeft.seconds).padStart(2, "0")}
+                </div>
+                <span className="text-[8px] font-bold text-slate-400 mt-1 uppercase">Secs</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => alert(t("Please open the ElimuTube mobile app to set a reminder!", "Tafadhali fungua app ya ElimuTube ili kuweka kikumbusho!"))}
+              className="px-4 py-2.5 rounded-xl bg-slate-950 text-amber-550 hover:bg-slate-900 border border-slate-900 dark:border-slate-800 text-xs font-bold transition active:scale-95 cursor-pointer shadow-sm"
+            >
+              {t("Remind Me", "Nikumbushe")}
+            </button>
+          </div>
+        </div>
+
         {/* HERO SECTION */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           <div className="lg:col-span-7 flex flex-col gap-5 text-center lg:text-left">

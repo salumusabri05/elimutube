@@ -21,6 +21,8 @@ import {
   Star, 
   Award,
   ChevronRight,
+  ChevronDown,
+  HelpCircle,
   TrendingUp,
   Activity,
   ArrowUpRight,
@@ -57,6 +59,8 @@ export default function HomePage() {
   const [selectedForm, setSelectedForm] = useState<"form3" | "form4">("form4");
   const [selectedSubject, setSelectedSubject] = useState<"math" | "biology" | "physics" | "chemistry">("math");
   const [targetGrade, setTargetGrade] = useState<"A" | "B" | "C">("A");
+  const [pricingPeriod, setPricingPeriod] = useState<"monthly" | "quarterly" | "annual">("annual");
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   // Fetch real-time dashboard statistics from Railway backend
   useEffect(() => {
@@ -696,20 +700,94 @@ export default function HomePage() {
                     <span className="text-[10px] text-slate-400 font-semibold uppercase">{t("Study Pace", "Muda wa Kusoma")}</span>
                   </div>
                 </div>
-
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col gap-3 border-t border-slate-100 dark:border-slate-850 pt-4 mt-2">
                 <button 
                   onClick={() => alert(t("Please download our mobile app to access this study plan!", "Tafadhali pakua app yetu ya simu ili kupata mpango huu wa masomo!"))}
                   className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-extrabold text-xs transition duration-200 cursor-pointer text-center"
                 >
                   {t("Access This Study Plan inside the App", "Anza Kufuata Mpango huu Kwenye App")}
                 </button>
+                <p className="text-[10px] text-center text-slate-450 dark:text-slate-500 font-medium">
+                  🔒 {t("Note: Access to premium syllabus videos and interactive AI features requires a small subscription fee inside the mobile app.", "Angalizo: Ili kupata video za masomo na AI inahitaji malipo kidogo ya kujiunga ndani ya app.")}
+                </p>
               </div>
 
             </div>
 
+          </div>
+        </div>
+      </section>
+
+      {/* QUICK FAQ ACCORDION SECTION */}
+      <section className="py-20 border-t border-slate-200/80 dark:border-slate-900 bg-slate-50 dark:bg-slate-950/20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 flex flex-col gap-12">
+          
+          <div className="text-center max-w-2xl mx-auto flex flex-col gap-4">
+            <Badge className="w-fit mx-auto px-3.5 py-1 bg-indigo-500/10 text-indigo-650 dark:bg-indigo-500/20 dark:text-indigo-400 border border-indigo-500/20 dark:border-indigo-500/30 text-xs font-bold rounded-full uppercase tracking-wider">
+              {t("FAQ", "Maswali ya Mara kwa Mara")}
+            </Badge>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Frequently Asked Questions", "Maswali Yanayoulizwa Sana")}
+            </h2>
+            <p className="text-sm text-slate-650 dark:text-slate-400">
+              {t(
+                "Have questions about ElimuTube? Read through these direct answers or contact us on WhatsApp.",
+                "Una maswali kuhusu ElimuTube? Soma majibu haya au wasiliana nasi kupitia WhatsApp."
+              )}
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 max-w-3xl mx-auto w-full">
+            {[
+              {
+                qEn: "Do lessons match the national NECTA syllabus?",
+                qSw: "Je, masomo yanafuata mtaala wa kitaifa wa NECTA?",
+                aEn: "Yes, 100%. All lectures, study summaries, and quizzes on ElimuTube are prepared by qualified classroom teachers specifically matching the Form 1 to Form 4 Tanzania syllabus overseen by NECTA.",
+                aSw: "Ndiyo, 100%. Video zote, muhtasari, na mazoezi kwenye ElimuTube vimeandaliwa na walimu bingwa darasani kulingana na mtaala rasmi wa Tanzania kuanzia Kidato cha Kwanza hadi cha Nne unaosimamiwa na NECTA."
+              },
+              {
+                qEn: "How do I make payments on the app?",
+                qSw: "Jinsi gani naweza kulipia kwenye app?",
+                aEn: "We support seamless, instant mobile money payments (M-Pesa, Tigo Pesa, Airtel Money, Halopesa) directly inside the app. Once paid, your subscription is activated immediately.",
+                aSw: "Tunasaidia malipo rahisi na ya haraka ya mitandao yote ya simu (M-Pesa, Tigo Pesa, Airtel Money, Halopesa) moja kwa moja ndani ya app. Ukishalipia, akaunti yako inafunguliwa papo hapo."
+              },
+              {
+                qEn: "Can I download lectures to watch offline?",
+                qSw: "Je, naweza kupakua masomo na kusoma bila bando (offline)?",
+                aEn: "Yes! ElimuTube offers a smart Offline Download Mode. Students can download any video lecture while on Wi-Fi or with a small data bundle, then watch it anytime offline without using any internet data.",
+                aSw: "Ndiyo! ElimuTube inakupa uwezo wa kupakua (Offline Download). Wanafunzi wanaweza kupakua video yoyote wakiwa na Wi-Fi au MB chache, kisha kuiangalia wakati wowote bila kutumia internet ya ziada."
+              },
+              {
+                qEn: "How does the bilingual AI Tutor help me?",
+                qSw: "Msaidizi wa AI ananisaidiaje kwa lugha mbili?",
+                aEn: "Our custom AI Study Assistant understands Swahili and English. If a student struggles to understand a concept in English (like 'photosynthesis' or 'quadratic equations'), they can ask in Swahili and get an immediate, bilingual response matching the syllabus.",
+                aSw: "Msaidizi wetu wa AI anaelewa Kiswahili na Kiingereza. Mwanafunzi akipata ugumu kuelewa dhana kwa Kiingereza, anaweza kuuliza kwa Kiswahili na kupata majibu mepesi ya lugha zote mbili yanayoendana na mtaala wake."
+              }
+            ].map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div 
+                  key={idx}
+                  className="rounded-2xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/40 overflow-hidden transition-all duration-300"
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full flex items-center justify-between p-5 text-left font-bold text-sm text-slate-900 dark:text-white transition duration-200 hover:bg-slate-50 dark:hover:bg-slate-900/60 cursor-pointer"
+                  >
+                    <span>{language === "SW" ? faq.qSw : faq.qEn}</span>
+                    <ChevronDown className={`size-4 text-slate-400 shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+                  </button>
+                  
+                  {isOpen && (
+                    <div className="px-5 pb-5 pt-1 text-xs text-slate-600 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 animate-in slide-in-from-top-2 duration-250">
+                      {language === "SW" ? faq.aSw : faq.aEn}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
 
         </div>

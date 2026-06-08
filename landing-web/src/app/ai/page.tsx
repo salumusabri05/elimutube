@@ -1,15 +1,136 @@
 "use client";
 
-import React, { useState } from "react";
-import { Sparkles, Brain, Cpu, MessageSquare, Play, RefreshCw, Star, GraduationCap } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Sparkles, Brain, Cpu, MessageSquare, Play, RefreshCw, Star, GraduationCap, Send, Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+interface ChatMessage {
+  sender: "user" | "ai";
+  text: string;
+  analogy?: string;
+}
 
 export default function AIPage() {
   const { t } = useLanguage();
   const [activeTopic, setActiveTopic] = useState<"biology" | "chemistry" | "math">("biology");
   const [chatLang, setChatLang] = useState<"EN" | "SW">("EN");
+  
+  // Custom message threads based on selected topic
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputText, setInputText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Initialize messages or reset on topic/language change
+  useEffect(() => {
+    if (activeTopic === "biology") {
+      setMessages([
+        {
+          sender: "user",
+          text: chatLang === "EN" ? "Explain the concept of osmosis in simple terms." : "Nieleze kuhusu osmosis kwa mifano rahisi."
+        },
+        {
+          sender: "ai",
+          text: chatLang === "EN" 
+            ? "Osmosis is the movement of water molecules from a region of higher water concentration to a region of lower water concentration through a semi-permeable membrane."
+            : "Osmosis ni mwendo wa molekuli za maji kutoka sehemu yenye maji mengi kwenda sehemu yenye maji machache kupitia utando mwembamba unaochuja (semi-permeable membrane).",
+          analogy: chatLang === "EN"
+            ? "💡 Easy Analogy: Think of putting dried raisins in water—they swell up because water enters them via osmosis!"
+            : "💡 Mfano Rahisi: Ukiloweka zabibu kavu kwenye maji, hufura kwa sababu maji huingia ndani kwa osmosis!"
+        }
+      ]);
+    } else if (activeTopic === "chemistry") {
+      setMessages([
+        {
+          sender: "user",
+          text: chatLang === "EN" ? "What is the difference between an acid and a base?" : "Kuna tofauti gani kati ya asidi (acid) na besi (base)?"
+        },
+        {
+          sender: "ai",
+          text: chatLang === "EN"
+            ? "Acids have a pH less than 7, taste sour, and turn blue litmus paper red (e.g., lemon juice). Bases have a pH greater than 7, feel slippery, and turn red litmus paper blue (e.g., soap solution)."
+            : "Asidi (Acids) zina pH chini ya 7, zina ladha ya uchachu, na hugeuza karatasi ya litmus ya bluu kuwa nyekundu. Besi (Bases) zina pH zaidi ya 7, huteleza, na hugeuza karatasi ya litmus nyekundu kuwa bluu."
+        }
+      ]);
+    } else if (activeTopic === "math") {
+      setMessages([
+        {
+          sender: "user",
+          text: chatLang === "EN" ? "How do I solve a quadratic equation?" : "Ninasolu vipi equation ya quadratic?"
+        },
+        {
+          sender: "ai",
+          text: chatLang === "EN"
+            ? "To solve a quadratic equation of the form ax² + bx + c = 0, use the quadratic formula: x = [-b ± √(b² - 4ac)] / 2a. Just identify coefficients a, b, c and plug them in."
+            : "Ili kutatua quadratic equation ya mfumo wa ax² + bx + c = 0, tumia fomula ya quadratic: x = [-b ± √(b² - 4ac)] / 2a. Tambua viambatanisho a, b, na c kisha viweke kwenye fomula."
+        }
+      ]);
+    }
+  }, [activeTopic, chatLang]);
+
+  // Scroll to bottom helper
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isTyping]);
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inputText.trim() || isTyping) return;
+
+    const userText = inputText;
+    setInputText("");
+    
+    // Add User Message
+    setMessages((prev) => [...prev, { sender: "user", text: userText }]);
+    
+    // Trigger typing state
+    setIsTyping(true);
+
+    setTimeout(() => {
+      // Analyze question and return custom response
+      const query = userText.toLowerCase();
+      let aiText = "";
+      let aiAnalogy = "";
+
+      if (chatLang === "EN") {
+        if (query.includes("hi") || query.includes("hello") || query.includes("howdy") || query.includes("habari")) {
+          aiText = "Hello there! I am the ElimuTube AI Study Assistant. I can help with biology, chemistry, physics, math, and more. Ask me anything!";
+        } else if (query.includes("math") || query.includes("quad") || query.includes("calcul") || query.includes("algebra")) {
+          aiText = "Mathematics requires understanding definitions and constant practice. In quadratic equations, always make sure the equation equals zero before finding a, b, and c.";
+          aiAnalogy = "💡 Tip: Write down formulas at the top of your answer sheet to keep them handy.";
+        } else if (query.includes("physics") || query.includes("force") || query.includes("gravity") || query.includes("newton")) {
+          aiText = "Physics studies nature and laws of motion. For example, Force = mass × acceleration. Gravity on Earth pulls objects down at roughly 9.8 m/s².";
+          aiAnalogy = "💡 Mfano: If you throw a stone up, gravity decelerates it until it stops and falls back down.";
+        } else if (query.includes("fee") || query.includes("price") || query.includes("cost") || query.includes("pay") || query.includes("subscribe")) {
+          aiText = "Subscriptions are affordable: 5,000 TZS per month, 12,000 TZS for 3 months, or 35,000 TZS for a whole year. You pay directly via Mobile Money in the app.";
+        } else {
+          aiText = `That is an interesting question! On ElimuTube, I answer this by directly connecting it to the Form 1 - 4 syllabus modules.`;
+          aiAnalogy = "💡 Recommended: Download the ElimuTube Mobile App to get full definitions and practice quizzes.";
+        }
+      } else {
+        // Kiswahili response
+        if (query.includes("hi") || query.includes("hello") || query.includes("mambo") || query.includes("habari")) {
+          aiText = "Habari yako! Mimi ni Msaidizi wa masomo wa ElimuTube AI. Ninaweza kukusaidia katika masomo yote ya sekondari ya Tanzania. Niulize chochote!";
+        } else if (query.includes("math") || query.includes("quad") || query.includes("hesabu") || query.includes("fomula")) {
+          aiText = "Katika hisabati, kuelewa kanuni ndio msingi wa kila kitu. Hakikisha unaandika kanuni kabla ya kuanza kukokotoa maswali yako.";
+          aiAnalogy = "💡 Ushauri: Kagua kama unaweza kurahisisha hesabu kwa kuigawanya kabla ya kuanza kuzidisha namba kubwa.";
+        } else if (query.includes("physics") || query.includes("force") || query.includes("fizikia") || query.includes("nguvu")) {
+          aiText = "Fizikia inahusu masomo ya nguvu na nishati. Kwa mfano, Nguvu = masi × mchapuko. Nguvu ya uvutano (gravity) duniani huvuta vitu chini kwa kasi ya 9.8 m/s².";
+          aiAnalogy = "💡 Mfano: Ukitupa mpira juu, nguvu ya uvutano huanza kuupunguza kasi hadi unaposimama na kuanza kuanguka chini.";
+        } else if (query.includes("fee") || query.includes("price") || query.includes("cost") || query.includes("pay") || query.includes("bei") || query.includes("gharama")) {
+          aiText = "Gharama ni nafuu sana: 5,000 TZS kwa mwezi, 12,000 TZS kwa miezi mitatu, au 35,000 TZS kwa mwaka mzima. Lipia kupitia mitandao yote ya simu kiganjani mwako.";
+        } else {
+          aiText = `Swali zuri sana! Kwenye ElimuTube, mimi hutoa majibu yanayofuata mtaala rasmi wa shule za sekondari nchini ili uweze kufaulu vizuri.`;
+          aiAnalogy = "💡 Ushauri: Pakua app ya simu ya ElimuTube kupata maelezo zaidi na kufanya mazoezi ya mitihani iliyopita.";
+        }
+      }
+
+      setMessages((prev) => [...prev, { sender: "ai", text: aiText, analogy: aiAnalogy || undefined }]);
+      setIsTyping(false);
+    }, 1200);
+  };
 
   return (
     <div className="flex-1 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
@@ -170,8 +291,8 @@ export default function AIPage() {
             </h2>
             <p className="text-sm text-slate-650 dark:text-slate-400">
               {t(
-                "Select a subject below and switch languages to experience how the AI explains complex syllabus concepts instantly in both English and Swahili.",
-                "Chagua somo hapa chini na ubadilishe lugha uone jinsi AI inavyofafanua dhana ngumu za masomo kwa Kiingereza na Kiswahili papo hapo."
+                "Type your own academic questions or select a topic below to see how our AI explains complex syllabus concepts instantly in both English and Swahili.",
+                "Andika maswali yako ya shule au chagua mada hapa chini uone jinsi AI inavyofafanua dhana ngumu za masomo kwa Kiingereza na Kiswahili papo hapo."
               )}
             </p>
           </div>
@@ -227,10 +348,10 @@ export default function AIPage() {
             </div>
 
             {/* Simulated Chat Interface */}
-            <div className="md:col-span-8 flex flex-col rounded-2xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/40 shadow-xl overflow-hidden min-h-[380px] hover:shadow-2xl transition duration-300">
+            <div className="md:col-span-8 flex flex-col rounded-2xl border border-slate-200 dark:border-slate-855 bg-white dark:bg-slate-900/40 shadow-xl overflow-hidden min-h-[420px] hover:shadow-2xl transition duration-300">
               
               {/* Chat Header */}
-              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
+              <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-855 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="size-9 rounded-full bg-amber-500 text-slate-950 flex items-center justify-center font-black relative shrink-0">
                     AI
@@ -251,7 +372,7 @@ export default function AIPage() {
                     className={`px-3 py-1 rounded-md transition cursor-pointer ${
                       chatLang === "EN"
                         ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-                        : "text-slate-500 hover:text-slate-850 dark:hover:text-slate-300"
+                        : "text-slate-550 hover:text-slate-850 dark:hover:text-slate-300"
                     }`}
                   >
                     English
@@ -261,7 +382,7 @@ export default function AIPage() {
                     className={`px-3 py-1 rounded-md transition cursor-pointer ${
                       chatLang === "SW"
                         ? "bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs"
-                        : "text-slate-500 hover:text-slate-850 dark:hover:text-slate-300"
+                        : "text-slate-550 hover:text-slate-850 dark:hover:text-slate-300"
                     }`}
                   >
                     Kiswahili
@@ -270,99 +391,62 @@ export default function AIPage() {
               </div>
 
               {/* Chat Messages */}
-              <div className="p-5 flex-1 flex flex-col gap-4 bg-slate-50/30 dark:bg-slate-950/20 overflow-y-auto">
+              <div className="p-5 flex-1 flex flex-col gap-4 bg-slate-50/30 dark:bg-slate-950/20 overflow-y-auto max-h-[300px]">
+                {messages.map((msg, i) => (
+                  <div 
+                    key={i} 
+                    className={`flex flex-col gap-1 max-w-[85%] ${msg.sender === "user" ? "items-end self-end" : "items-start self-start"}`}
+                  >
+                    <span className="text-[9px] text-slate-400 font-medium px-2">
+                      {msg.sender === "user" ? t("You • Student", "Wewe • Mwanafunzi") : "ElimuTube AI Tutor"}
+                    </span>
+                    <div 
+                      className={`px-4 py-2.5 rounded-2xl text-xs leading-relaxed shadow-xs font-semibold ${
+                        msg.sender === "user" 
+                          ? "rounded-tr-none bg-indigo-600 text-white" 
+                          : "rounded-tl-none bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 text-slate-850 dark:text-slate-200"
+                      }`}
+                    >
+                      <p>{msg.text}</p>
+                      {msg.analogy && (
+                        <p className="bg-amber-500/5 dark:bg-amber-500/10 border-l-2 border-amber-500 p-2 rounded text-[10px] text-slate-650 dark:text-slate-300 mt-2 font-medium">
+                          {msg.analogy}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+
+                {isTyping && (
+                  <div className="flex flex-col gap-1 items-start self-start">
+                    <span className="text-[9px] text-slate-400 font-medium px-2">ElimuTube AI Tutor</span>
+                    <div className="px-4 py-3 rounded-2xl rounded-tl-none bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 text-slate-400 text-xs leading-relaxed shadow-xs flex items-center gap-1.5 font-medium">
+                      <Loader2 className="size-3.5 animate-spin text-amber-550" />
+                      <span>{t("AI is thinking...", "AI anafikiria...")}</span>
+                    </div>
+                  </div>
+                )}
                 
-                {/* Student Bubble */}
-                <div className="flex flex-col gap-1 items-end max-w-[85%] self-end">
-                  <span className="text-[9px] text-slate-400 font-medium px-2">{t("You • Student", "Wewe • Mwanafunzi")}</span>
-                  <div className="px-4 py-2.5 rounded-2xl rounded-tr-none bg-indigo-600 text-white text-xs leading-relaxed shadow-sm font-semibold">
-                    {activeTopic === "biology" && (
-                      chatLang === "EN" ? "Explain the concept of osmosis in simple terms." : "Nieleze kuhusu osmosis kwa mifano rahisi."
-                    )}
-                    {activeTopic === "chemistry" && (
-                      chatLang === "EN" ? "What is the difference between an acid and a base?" : "Kuna tofauti gani kati ya asidi (acid) na besi (base)?"
-                    )}
-                    {activeTopic === "math" && (
-                      chatLang === "EN" ? "How do I solve a quadratic equation?" : "Ninasolu vipi equation ya quadratic?"
-                    )}
-                  </div>
-                </div>
-
-                {/* AI Bubble */}
-                <div className="flex flex-col gap-1 items-start max-w-[85%] self-start">
-                  <span className="text-[9px] text-slate-400 font-medium px-2">ElimuTube AI Tutor</span>
-                  <div className="px-4 py-3 rounded-2xl rounded-tl-none bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 text-slate-850 dark:text-slate-200 text-xs leading-relaxed shadow-sm flex flex-col gap-2">
-                    {activeTopic === "biology" && (
-                      chatLang === "EN" ? (
-                        <>
-                          <p><strong>Osmosis</strong> is the movement of water molecules from a region of higher water concentration to a region of lower water concentration through a semi-permeable membrane.</p>
-                          <p className="bg-amber-500/5 border-l-2 border-amber-500 p-2 rounded text-[11px] text-slate-650 dark:text-slate-300">
-                            💡 <strong>Easy Analogy:</strong> Think of putting dried raisins in water—they swell up because water enters them via osmosis!
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <p><strong>Osmosis</strong> ni mwendo wa molekuli za maji kutoka sehemu yenye maji mengi kwenda sehemu yenye maji machache kupitia utando nyembamba unaochuja (semi-permeable membrane).</p>
-                          <p className="bg-amber-500/5 border-l-2 border-amber-500 p-2 rounded text-[11px] text-slate-650 dark:text-slate-300">
-                            💡 <strong>Mfano Rahisi:</strong> Ukiloweka zabibu kavu kwenye maji, hufura kwa sababu maji huingia ndani kwa osmosis!
-                          </p>
-                        </>
-                      )
-                    )}
-
-                    {activeTopic === "chemistry" && (
-                      chatLang === "EN" ? (
-                        <>
-                          <p>Here is the main difference between acids and bases:</p>
-                          <ul className="list-disc pl-4 flex flex-col gap-1 text-[11px] text-slate-650 dark:text-slate-300">
-                            <li><strong>Acids:</strong> Have a pH less than 7, taste sour, and turn blue litmus paper red (e.g., lemon juice).</li>
-                            <li><strong>Bases:</strong> Have a pH greater than 7, feel slippery, and turn red litmus paper blue (e.g., soap solution).</li>
-                          </ul>
-                        </>
-                      ) : (
-                        <>
-                          <p>Hapa kuna tofauti kuu kati ya asidi na besi:</p>
-                          <ul className="list-disc pl-4 flex flex-col gap-1 text-[11px] text-slate-650 dark:text-slate-300">
-                            <li><strong>Asidi (Acids):</strong> Zina pH chini ya 7, zina ladha ya uchachu, na hugeuza karatasi ya litmus ya bluu kuwa nyekundu (mfano: juisi ya limao).</li>
-                            <li><strong>Besi (Bases):</strong> Zina pH zaidi ya 7, huteleza, na hugeuza karatasi ya litmus nyekundu kuwa bluu (mfano: sabuni).</li>
-                          </ul>
-                        </>
-                      )
-                    )}
-
-                    {activeTopic === "math" && (
-                      chatLang === "EN" ? (
-                        <>
-                          <p>To solve a quadratic equation of the form <strong>ax² + bx + c = 0</strong>, use the quadratic formula:</p>
-                          <p className="font-mono text-center my-1.5 p-1.5 bg-slate-100 dark:bg-slate-950 rounded text-amber-600 dark:text-amber-500 font-bold">
-                            x = [-b ± √(b² - 4ac)] / 2a
-                          </p>
-                          <p>Just identify the coefficients <em>a</em>, <em>b</em>, and <em>c</em> from your equation and substitute them into the formula.</p>
-                        </>
-                      ) : (
-                        <>
-                          <p>Ili kutatua quadratic equation ya mfumo wa <strong>ax² + bx + c = 0</strong>, tumia fomula ya quadratic:</p>
-                          <p className="font-mono text-center my-1.5 p-1.5 bg-slate-100 dark:bg-slate-950 rounded text-amber-600 dark:text-amber-500 font-bold">
-                            x = [-b ± √(b² - 4ac)] / 2a
-                          </p>
-                          <p>Tambua tu viambatanisho (coefficients) <em>a</em>, <em>b</em>, na <em>c</em> kwenye equation yako na uviweke kwenye fomula hii kupata x.</p>
-                        </>
-                      )
-                    )}
-                  </div>
-                </div>
-
+                <div ref={chatEndRef} />
               </div>
 
-              {/* Chat Input Placeholder */}
-              <div className="px-5 py-3 border-t border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/60 flex items-center gap-3">
-                <div className="flex-1 bg-slate-100 dark:bg-slate-950 text-slate-450 dark:text-slate-500 text-xs px-4 py-2.5 rounded-xl select-none">
-                  {t("Ask AI Tutor a question...", "Uliza swali lolote...")}
-                </div>
-                <button className="bg-amber-500 text-slate-950 size-9 rounded-xl flex items-center justify-center shadow-xs shrink-0 cursor-not-allowed opacity-80">
-                  <Sparkles className="size-4 fill-slate-950 stroke-none" />
+              {/* Chat Input form */}
+              <form onSubmit={handleSendMessage} className="px-5 py-3 border-t border-slate-200 dark:border-slate-855 bg-white dark:bg-slate-900/60 flex items-center gap-3">
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder={t("Ask AI Tutor a question...", "Uliza swali lolote...")}
+                  className="flex-1 bg-slate-100 dark:bg-slate-950 text-slate-805 dark:text-slate-200 text-xs px-4 py-2.5 rounded-xl border border-transparent focus:border-slate-300 dark:focus:border-slate-800 outline-hidden font-medium"
+                />
+                <button 
+                  type="submit"
+                  disabled={!inputText.trim() || isTyping}
+                  className="bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 size-9 rounded-xl flex items-center justify-center shadow-xs shrink-0 cursor-pointer transition active:scale-95"
+                >
+                  <Send className="size-4" />
                 </button>
-              </div>
+              </form>
 
             </div>
 
