@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   Play, 
   Sparkles, 
@@ -21,6 +21,7 @@ import { useLanguage } from "@/context/LanguageContext";
 
 export default function LessonsMarketingPage() {
   const { t, language } = useLanguage();
+  const [inspectorLevel, setInspectorLevel] = useState<"form1" | "form2" | "form3" | "form4">("form4");
 
   const subjects = [
     { id: "MATH", name: "Mathematics", nameSw: "Hisabati", color: "from-blue-500 to-indigo-500", desc: "Form 1 to 6 comprehensive arithmetic, algebra, and calculus.", descSw: "Hisabati ya Kidato cha 1 hadi cha 6, algebra na calculus." },
@@ -149,6 +150,222 @@ export default function LessonsMarketingPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* CONCEPTUAL CURRICULUM INSPECTOR */}
+        <div className="flex flex-col gap-8">
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-3">
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Explore the NECTA Syllabus Roadmap", "Kagua Mtaala wa NECTA Hatua kwa Hatua")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {t(
+                "Click on a class level below to see how our video playlists are structured topic-by-topic to ensure 100% exam coverage.",
+                "Bonyeza kidato husika hapa chini kuona jinsi video zetu zilivyopangwa mada kwa mada ili kufunika mtaala mzima wa mitihani."
+              )}
+            </p>
+          </div>
+
+          {/* Level Tabs */}
+          <div className="flex bg-slate-100 dark:bg-slate-900/60 p-1 rounded-2xl max-w-lg mx-auto w-full grid grid-cols-4 gap-1">
+            {(["form1", "form2", "form3", "form4"] as const).map((level) => (
+              <button
+                key={level}
+                onClick={() => setInspectorLevel(level)}
+                className={`py-2 px-1 text-center font-bold text-xs rounded-xl transition duration-200 cursor-pointer ${
+                  inspectorLevel === level
+                    ? "bg-amber-500 text-slate-950 shadow-sm"
+                    : "text-slate-650 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
+                }`}
+              >
+                {level === "form1" && "Form 1"}
+                {level === "form2" && "Form 2"}
+                {level === "form3" && "Form 3"}
+                {level === "form4" && "Form 4"}
+              </button>
+            ))}
+          </div>
+
+          {/* Timeline Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            
+            {/* Subject: Mathematics */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-xl -z-10" />
+              <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-3">
+                <span className="font-extrabold text-xs px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-500">MATH</span>
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{t("Mathematics", "Hisabati")}</h4>
+              </div>
+              <div className="flex flex-col gap-3">
+                {(inspectorLevel === "form1" ? [
+                  ["Numbers & Fractions", "Namba na Sehemu"],
+                  ["Algebra & Equations", "Algebra na Milinganyo"],
+                  ["Geometry Basics", "Misingi ya Jometri"],
+                  ["Ratios & Percentages", "Uwiano na Asilimia"],
+                ] : inspectorLevel === "form2" ? [
+                  ["Exponents & Radicals", "Kipeo na Kipeuo"],
+                  ["Geometrical Construction", "Ujenzi wa Jometri"],
+                  ["Statistics & Probability", "Takwimu na Uwezekano"],
+                  ["Quadratic Equations", "Milinganyo ya Quadratic"],
+                ] : inspectorLevel === "form3" ? [
+                  ["Quadratic Functions", "Kazi za Quadratic"],
+                  ["Soil & Circle Geometry", "Jometri ya Duara"],
+                  ["Trigonometry Basics", "Misingi ya Trigonometria"],
+                  ["Linear Programming", "Linear Programming"],
+                ] : [
+                  ["Coordinate Geometry", "Jometri ya Kuratibu"],
+                  ["Vectors in 2D", "Vekta za 2D"],
+                  ["Matrices & Transform", "Matrisi na Ubadilishaji"],
+                  ["Probability Theory", "Nadharia ya Uwezekano"],
+                ]).map((topic, idx) => (
+                  <div key={idx} className="flex items-start gap-3 relative group">
+                    {idx < 3 && (
+                      <div className="absolute left-[9px] top-5 bottom-[-18px] w-0.5 bg-slate-200 dark:bg-slate-800" />
+                    )}
+                    <span className="size-[20px] rounded-full border border-blue-500 text-blue-500 flex items-center justify-center font-bold text-[10px] shrink-0 bg-white dark:bg-slate-950">
+                      {idx + 1}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-350 leading-tight">
+                      {language === "SW" ? topic[1] : topic[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Subject: Physics */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-amber-500/5 rounded-full blur-xl -z-10" />
+              <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-3">
+                <span className="font-extrabold text-xs px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-500">PHYS</span>
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{t("Physics", "Fizikia")}</h4>
+              </div>
+              <div className="flex flex-col gap-3">
+                {(inspectorLevel === "form1" ? [
+                  ["Intro to Physics", "Utangulizi wa Fizikia"],
+                  ["Measurement & Force", "Vipimo na Nguvu"],
+                  ["Density & Pressure", "Uzito na Shinikizo"],
+                  ["Work & Energy", "Kazi na Nishati"],
+                ] : inspectorLevel === "form2" ? [
+                  ["Static Electricity", "Umeme Tuli"],
+                  ["Magnetism & Poles", "Usumaku na Ncha"],
+                  ["Simple Machines", "Mashine Rahisi"],
+                  ["Newton's Laws", "Sheria za Newton"],
+                ] : inspectorLevel === "form3" ? [
+                  ["Applications of Vectors", "Matumizi ya Vekta"],
+                  ["Friction & Resistance", "Msuguano na Upinzani"],
+                  ["Light & Lenses", "Mwanga na Lensi"],
+                  ["Electromagnetism", "Usumaku-umeme"],
+                ] : [
+                  ["Waves & Propagation", "Mawimbi na Usafiri"],
+                  ["Electromagnetic Ind.", "Uingizaji Usumaku-umeme"],
+                  ["Radioactivity & Decay", "Mionzi na Uozo"],
+                  ["Electronics Basics", "Misingi ya Elektroniki"],
+                ]).map((topic, idx) => (
+                  <div key={idx} className="flex items-start gap-3 relative group">
+                    {idx < 3 && (
+                      <div className="absolute left-[9px] top-5 bottom-[-18px] w-0.5 bg-slate-200 dark:bg-slate-800" />
+                    )}
+                    <span className="size-[20px] rounded-full border border-amber-500 text-amber-500 flex items-center justify-center font-bold text-[10px] shrink-0 bg-white dark:bg-slate-950">
+                      {idx + 1}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-350 leading-tight">
+                      {language === "SW" ? topic[1] : topic[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Subject: Chemistry */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-full blur-xl -z-10" />
+              <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-3">
+                <span className="font-extrabold text-xs px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500">CHEM</span>
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{t("Chemistry", "Kemia")}</h4>
+              </div>
+              <div className="flex flex-col gap-3">
+                {(inspectorLevel === "form1" ? [
+                  ["Intro to Chemistry", "Utangulizi wa Kemia"],
+                  ["Laboratory Safety", "Usalama wa Lab"],
+                  ["Matter & Elements", "Mada na Elementi"],
+                  ["Air & Combustion", "Hewa na Mlipuko"],
+                ] : inspectorLevel === "form2" ? [
+                  ["Oxygen & Hydrogen", "Oksijeni na Hidrojeni"],
+                  ["Water & Solutions", "Maji na Mivurugo"],
+                  ["Atomic Structure", "Muundo wa Atomu"],
+                  ["Periodic Table", "Jedwali la Kipindi"],
+                ] : inspectorLevel === "form3" ? [
+                  ["Chemical Equations", "Milinganyo ya Kemia"],
+                  ["Hardness of Water", "Ugumu wa Maji"],
+                  ["Acids, Bases & Salts", "Asidi, Besi na Chumvi"],
+                  ["Volumetric Analysis", "Uchambuzi wa Kiasi"],
+                ] : [
+                  ["Organic Chemistry", "Kemia Hai"],
+                  ["Non-Metals & Comp.", "Zisizo za Metali"],
+                  ["Qualitative Analysis", "Uchambuzi wa Ubora"],
+                  ["Energy Changes", "Mabadiliko ya Nishati"],
+                ]).map((topic, idx) => (
+                  <div key={idx} className="flex items-start gap-3 relative group">
+                    {idx < 3 && (
+                      <div className="absolute left-[9px] top-5 bottom-[-18px] w-0.5 bg-slate-200 dark:bg-slate-800" />
+                    )}
+                    <span className="size-[20px] rounded-full border border-emerald-500 text-emerald-500 flex items-center justify-center font-bold text-[10px] shrink-0 bg-white dark:bg-slate-950">
+                      {idx + 1}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-350 leading-tight">
+                      {language === "SW" ? topic[1] : topic[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Subject: Biology */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-red-500/5 rounded-full blur-xl -z-10" />
+              <div className="flex items-center gap-2 border-b border-slate-100 dark:border-slate-850 pb-3">
+                <span className="font-extrabold text-xs px-2 py-0.5 rounded-md bg-red-500/10 text-red-500">BIOL</span>
+                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">{t("Biology", "Biolojia")}</h4>
+              </div>
+              <div className="flex flex-col gap-3">
+                {(inspectorLevel === "form1" ? [
+                  ["Intro to Biology", "Utangulizi wa Biolojia"],
+                  ["Safety & First Aid", "Usalama na Huduma ya Kwanza"],
+                  ["Cell Structure", "Muundo wa Selula"],
+                  ["Classification I", "Uainishaji wa Kwanza"],
+                ] : inspectorLevel === "form2" ? [
+                  ["Human Respiration", "Kupumua kwa Binadamu"],
+                  ["Gaseous Exchange", "Mabadilishano ya Hewa"],
+                  ["Transport Systems", "Mifumo ya Usafirishaji"],
+                  ["Excretory System", "Mfumo wa Utoaji Uchafu"],
+                ] : inspectorLevel === "form3" ? [
+                  ["Classification II", "Uainishaji wa Pili"],
+                  ["Coordination Systems", "Mifumo ya Uratibu"],
+                  ["Movement & Support", "Mwendo na Usaidizi"],
+                  ["Internal Regulation", "Udhibiti wa Ndani"],
+                ] : [
+                  ["Principles of Genetics", "Misingi ya Jenetiki"],
+                  ["Evolution Theories", "Nadharia za Mageuzi"],
+                  ["Human Ecology", "Ekolojia ya Binadamu"],
+                  ["Receptors & Sense", "Vipokezi na Hisia"],
+                ]).map((topic, idx) => (
+                  <div key={idx} className="flex items-start gap-3 relative group">
+                    {idx < 3 && (
+                      <div className="absolute left-[9px] top-5 bottom-[-18px] w-0.5 bg-slate-200 dark:bg-slate-800" />
+                    )}
+                    <span className="size-[20px] rounded-full border border-red-500 text-red-500 flex items-center justify-center font-bold text-[10px] shrink-0 bg-white dark:bg-slate-950">
+                      {idx + 1}
+                    </span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-350 leading-tight">
+                      {language === "SW" ? topic[1] : topic[0]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
 

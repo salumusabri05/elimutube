@@ -51,6 +51,9 @@ export default function HomePage() {
   const [statsLoading, setStatsLoading] = useState(true);
   const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [demoVideoOpen, setDemoVideoOpen] = useState(false);
+  const [selectedForm, setSelectedForm] = useState<"form3" | "form4">("form4");
+  const [selectedSubject, setSelectedSubject] = useState<"math" | "biology" | "physics" | "chemistry">("math");
+  const [targetGrade, setTargetGrade] = useState<"A" | "B" | "C">("A");
 
   // Fetch real-time dashboard statistics from Railway backend
   useEffect(() => {
@@ -519,6 +522,300 @@ export default function HomePage() {
             </Card>
 
           </div>
+        </div>
+      </section>
+
+      {/* INTERACTIVE STUDY GOALS PLANNER */}
+      <section className="py-20 border-t border-slate-200/80 dark:border-slate-900 bg-linear-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900/20">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 flex flex-col gap-12">
+          
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-4">
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Build Your Custom Study Plan", "Tengeneza Mpango Wako wa Masomo")}
+            </h2>
+            <p className="text-sm text-slate-650 dark:text-slate-400">
+              {t(
+                "Select your class and target grade to see exactly how ElimuTube helps you structure your study schedule and NECTA syllabus preparation.",
+                "Chagua darasa lako na alama unayolenga ili kuona jinsi ElimuTube inavyokusaidia kupanga ratiba yako na kujiandaa kwa mitihani ya NECTA."
+              )}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch">
+            
+            {/* Planner Inputs */}
+            <div className="md:col-span-5 flex flex-col gap-6 p-6 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-850 shadow-sm justify-between">
+              
+              {/* Form Selection */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("1. Select Class Level", "1. Chagua Darasa")}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setSelectedForm("form3")}
+                    className={`py-2 px-3 rounded-lg border text-xs font-bold transition duration-200 cursor-pointer ${
+                      selectedForm === "form3"
+                        ? "bg-amber-500 border-amber-500 text-slate-950"
+                        : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                    }`}
+                  >
+                    Form 3 (O-Level)
+                  </button>
+                  <button
+                    onClick={() => setSelectedForm("form4")}
+                    className={`py-2 px-3 rounded-lg border text-xs font-bold transition duration-200 cursor-pointer ${
+                      selectedForm === "form4"
+                        ? "bg-amber-500 border-amber-500 text-slate-950"
+                        : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                    }`}
+                  >
+                    Form 4 (O-Level)
+                  </button>
+                </div>
+              </div>
+
+              {/* Subject Selection */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("2. Choose Subject", "2. Chagua Somo")}</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["math", "biology", "physics", "chemistry"] as const).map((subj) => (
+                    <button
+                      key={subj}
+                      onClick={() => setSelectedSubject(subj)}
+                      className={`py-2 px-3 rounded-lg border text-xs font-bold transition duration-200 cursor-pointer ${
+                        selectedSubject === subj
+                          ? "bg-slate-900 dark:bg-white text-white dark:text-slate-950 border-slate-900 dark:border-white"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      {subj === "math" && t("Mathematics", "Hisabati")}
+                      {subj === "biology" && t("Biology", "Biolojia")}
+                      {subj === "physics" && t("Physics", "Fizikia")}
+                      {subj === "chemistry" && t("Chemistry", "Kemia")}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Target Grade Selection */}
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("3. Target NECTA Grade", "3. Alama Unayolenga")}</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["A", "B", "C"] as const).map((grade) => (
+                    <button
+                      key={grade}
+                      onClick={() => setTargetGrade(grade)}
+                      className={`py-2 px-3 rounded-lg border text-xs font-bold transition duration-200 cursor-pointer ${
+                        targetGrade === grade
+                          ? "bg-amber-500/10 border-amber-500 text-amber-600 dark:text-amber-500"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                      }`}
+                    >
+                      Grade {grade}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Plan Output / Results Card */}
+            <div className="md:col-span-7 flex flex-col p-6 rounded-2xl bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-850 shadow-md justify-between gap-6 hover:shadow-lg transition duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl -z-10" />
+              
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <Badge className="bg-amber-500 text-slate-950 font-bold border-none text-[10px]">
+                    {selectedForm === "form3" ? "Form 3" : "Form 4"} • {selectedSubject.toUpperCase()}
+                  </Badge>
+                  <span className="text-xs font-mono font-bold text-slate-400">
+                    {t("TARGET: GRADE ", "LENGO: DARAJA LA ")}{targetGrade}
+                  </span>
+                </div>
+
+                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">
+                  {t("Your Syllabus Preparation Checklist", "Orodha Yako ya Maandalizi ya Mitihani")}
+                </h3>
+
+                {/* Key Syllabus Chapters */}
+                <div className="flex flex-col gap-2 mt-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    {t("Key Syllabus Chapters Covered:", "Mada Muhimu Zilizopo:")}
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {(selectedForm === "form3" ? [
+                      selectedSubject === "math" && ["Quadratic Equations", "Fomula ya Quadratic"],
+                      selectedSubject === "biology" && ["Classification", "Uainishaji wa Viumbe"],
+                      selectedSubject === "physics" && ["Applications of Vectors", "Matumizi ya Vekta"],
+                      selectedSubject === "chemistry" && ["Chemical Equations", "Milinganyo ya Kikemia"],
+                      selectedSubject === "math" && ["Trigonometry", "Trigonometria"],
+                      selectedSubject === "biology" && ["Regulation & Control", "Udhibiti wa Mwili"],
+                      selectedSubject === "physics" && ["Electromagnetism", "Usumaku-umeme"],
+                      selectedSubject === "chemistry" && ["Acids, Bases & Salts", "Asidi na Chumvi"],
+                    ] : [
+                      selectedSubject === "math" && ["Coordinate Geometry", "Jometri ya Kuratibu"],
+                      selectedSubject === "biology" && ["Genetics & Evolution", "Jenetiki na Mageuzi"],
+                      selectedSubject === "physics" && ["Waves & Light", "Mawimbi na Mwanga"],
+                      selectedSubject === "chemistry" && ["Organic Chemistry", "Kemia Hai"],
+                      selectedSubject === "math" && ["Probability & Matrices", "Uwezekano na Matrisi"],
+                      selectedSubject === "biology" && ["Human Ecology", "Ekolojia ya Binadamu"],
+                      selectedSubject === "physics" && ["Radioactivity & Electronics", "Mionzi na Elektroniki"],
+                      selectedSubject === "chemistry" && ["Qualitative Analysis", "Uchambuzi wa Ubora"],
+                    ]).filter(Boolean).map((topicPair, idx) => {
+                      const topicText = language === "SW" ? (topicPair as string[])[1] : (topicPair as string[])[0];
+                      return (
+                        <div key={idx} className="flex items-center gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-950 text-xs">
+                          <Check className="size-4 text-emerald-500 shrink-0" />
+                          <span className="font-semibold text-slate-700 dark:text-slate-350">{topicText}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Resource Stats */}
+                <div className="grid grid-cols-3 gap-4 border-t border-slate-100 dark:border-slate-850 pt-4 mt-2">
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black text-amber-500">
+                      {selectedForm === "form3" ? (selectedSubject === "math" ? 42 : selectedSubject === "biology" ? 36 : selectedSubject === "physics" ? 40 : 38) : (selectedSubject === "math" ? 48 : selectedSubject === "biology" ? 45 : selectedSubject === "physics" ? 50 : 44)}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase">{t("Video Lessons", "Masomo ya Video")}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black text-amber-500">
+                      {selectedForm === "form3" ? (selectedSubject === "math" ? 12 : selectedSubject === "biology" ? 10 : selectedSubject === "physics" ? 14 : 11) : (selectedSubject === "math" ? 15 : selectedSubject === "biology" ? 12 : selectedSubject === "physics" ? 16 : 13)}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase">{t("Quizzes", "Chemsha Bongo")}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-2xl font-black text-amber-500">
+                      {targetGrade === "A" ? "4 hrs/wk" : targetGrade === "B" ? "3 hrs/wk" : "2 hrs/wk"}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-semibold uppercase">{t("Study Pace", "Muda wa Kusoma")}</span>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => alert(t("Please download our mobile app to access this study plan!", "Tafadhali pakua app yetu ya simu ili kupata mpango huu wa masomo!"))}
+                  className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-950 font-extrabold text-xs transition duration-200 cursor-pointer text-center"
+                >
+                  {t("Access This Study Plan inside the App", "Anza Kufuata Mpango huu Kwenye App")}
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* SOCIAL PROOF & TESTIMONIALS */}
+      <section className="py-20 border-t border-slate-200/80 dark:border-slate-900 bg-white dark:bg-slate-950">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 flex flex-col gap-12">
+          
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-4">
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Loved by Students, Parents & Teachers", "Inapendwa na Wanafunzi, Wazazi na Walimu")}
+            </h2>
+            <p className="text-sm text-slate-650 dark:text-slate-400">
+              {t(
+                "Hear from Tanzanians who have changed their learning outcomes and teaching reach using ElimuTube.",
+                "Sikia kutoka kwa Watanzania ambao wameongeza ufaulu wao na kufikia wanafunzi wengi zaidi kwa kutumia ElimuTube."
+              )}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+            
+            {/* Student Card */}
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-850 flex flex-col justify-between hover:border-amber-500/40 transition duration-300">
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-1 text-amber-500">
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed italic">
+                  {t(
+                    "\"I was struggling with Physics and Chemistry. The animations and simple explanations by Mwalimu Halima, followed by the AI summaries, helped me get a Division I with A in Physics and A in Chemistry!\"",
+                    "\"Nilikuwa nahangaika sana na Physics na Chemistry. Video za Mwalimu Halima zilizofundishwa kwa Kiswahili pamoja na muhtasari wa AI zilinisaidia kupata Division I na kupata A ya Physics na A ya Chemistry!\""
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 border-t border-slate-200/40 dark:border-slate-800/40 pt-4 mt-4">
+                <div className="size-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 flex items-center justify-center font-black text-xs shrink-0">
+                  ES
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">Emanueli Samson</h5>
+                  <p className="text-[10px] text-slate-400">{t("Form 4 Student, Dar es Salaam", "Mwanafunzi wa Form 4, Dar")}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Parent Card */}
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-850 flex flex-col justify-between hover:border-indigo-500/40 transition duration-300">
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-1 text-amber-500">
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed italic">
+                  {t(
+                    "\"Paying for private tuition was costing over 150,000 TZS per month. With ElimuTube, for the cost of just one textbook, my daughter has all her subjects and a personal AI tutor to guide her 24/7.\"",
+                    "\"Kulipia tuition za mtaani ilikuwa inanigharimu zaidi ya 150,000 TZS kila mwezi. Kupitia ElimuTube, kwa gharama ya kitabu kimoja tu cha shule, binti yangu ana masomo yote na AI inayomsaidia saa 24.\""
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 border-t border-slate-200/40 dark:border-slate-800/40 pt-4 mt-4">
+                <div className="size-9 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center font-black text-xs shrink-0">
+                  MM
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">Mama Miriam</h5>
+                  <p className="text-[10px] text-slate-400">{t("Parent, Arusha", "Mzazi, Arusha")}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Teacher Card */}
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900/30 border border-slate-200/60 dark:border-slate-850 flex flex-col justify-between hover:border-pink-500/40 transition duration-300">
+              <div className="flex flex-col gap-4">
+                <div className="flex gap-1 text-amber-500">
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                  <Star className="size-4 fill-amber-500" />
+                </div>
+                <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed italic">
+                  {t(
+                    "\"I used to only be able to teach 50 students in my physical school classroom. Now, I have over 12,000 students subscribed to my mathematics channel on ElimuTube, boosting my teaching income enormously.\"",
+                    "\"Nilikuwa nafundisha wanafunzi 50 tu darasani shuleni kwangu. Sasa hivi nina wanafunzi zaidi ya 12,000 waliojiunga na chaneli yangu ya hesabu ElimuTube. Hii imeongeza sana kipato changu.\""
+                  )}
+                </p>
+              </div>
+              <div className="flex items-center gap-3 border-t border-slate-200/40 dark:border-slate-800/40 pt-4 mt-4">
+                <div className="size-9 rounded-full bg-pink-500/10 text-pink-600 dark:text-pink-500 flex items-center justify-center font-black text-xs shrink-0">
+                  MJ
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">Mwalimu James</h5>
+                  <p className="text-[10px] text-slate-400">{t("Mathematics Teacher, Mwanza", "Mwalimu wa Hesabu, Mwanza")}</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
         </div>
       </section>
 
