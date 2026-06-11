@@ -10,7 +10,6 @@ interface NavbarProps {
 
 export default function Navbar({ onMenuClick }: NavbarProps) {
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [apiEnv, setApiEnv] = useState<'production' | 'local'>('production');
   const router = useRouter();
 
   useEffect(() => {
@@ -18,11 +17,6 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     const initialTheme = savedTheme || 'dark';
     setTheme(initialTheme);
     document.documentElement.classList.toggle('dark', initialTheme === 'dark');
-
-    const savedEnv = localStorage.getItem('api_env') as 'production' | 'local' | null;
-    if (savedEnv) {
-      setApiEnv(savedEnv);
-    }
   }, []);
 
   const toggleTheme = () => {
@@ -30,12 +24,6 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
     setTheme(nextTheme);
     localStorage.setItem('theme', nextTheme);
     document.documentElement.classList.toggle('dark', nextTheme === 'dark');
-  };
-
-  const handleEnvChange = (env: 'production' | 'local') => {
-    setApiEnv(env);
-    localStorage.setItem('api_env', env);
-    window.location.reload();
   };
 
   const handleLogout = () => {
@@ -69,29 +57,7 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
 
       {/* Actions */}
       <div className="flex items-center gap-2 md:gap-3">
-        {/* Environment Switcher */}
-        <div className="hidden md:flex items-center gap-1 p-1 rounded-xl bg-[var(--item-bg)] ring-1 ring-inset ring-[var(--surface-divider)] text-[11px] font-semibold">
-          <button 
-            onClick={() => handleEnvChange('production')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              apiEnv === 'production' 
-                ? 'bg-indigo-600 text-white shadow-sm' 
-                : 'theme-text-secondary hover:theme-text-primary hover:bg-[var(--item-hover)]'
-            }`}
-          >
-            Prod API
-          </button>
-          <button 
-            onClick={() => handleEnvChange('local')}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              apiEnv === 'local' 
-                ? 'bg-indigo-600 text-white shadow-sm' 
-                : 'theme-text-secondary hover:theme-text-primary hover:bg-[var(--item-hover)]'
-            }`}
-          >
-            Local API
-          </button>
-        </div>
+
 
         {/* Theme Toggle */}
         <button 

@@ -110,31 +110,13 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* Header Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-900 via-[#0e122b] to-[#120f2b] p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 shadow-2xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_right,_var(--tw-gradient-stops))] from-indigo-500/10 via-transparent to-transparent pointer-events-none" />
-        <div className="relative z-10 space-y-2">
-          <span className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-400">
-            <Flame className="w-4 h-4 animate-bounce text-amber-500" />
-            System Live Status
-          </span>
-          <h1 className="text-3xl font-extrabold tracking-tight text-white">
-            ElimuTube Control Hub
-          </h1>
-          <p className="text-slate-400 max-w-md text-sm leading-relaxed">
-            Real-time control over verification flows, ledger entries, Agora classroom channels, and Content Service audits.
-          </p>
-        </div>
-        <div className="relative z-10 flex gap-3">
-          <div className="glass-panel px-4 py-3 rounded-2xl flex flex-col justify-center border-white/5">
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Gateway Load</span>
-            <span className="text-sm font-bold text-emerald-400 mt-0.5">Optimal (14ms)</span>
-          </div>
-          <div className="glass-panel px-4 py-3 rounded-2xl flex flex-col justify-center border-white/5">
-            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Active Streams</span>
-            <span className="text-sm font-bold text-indigo-400 mt-0.5">42 Agora Channels</span>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold theme-text-primary tracking-tight">
+          Dashboard Overview
+        </h1>
+        <p className="text-sm mt-1 theme-text-secondary">
+          Real-time control over verification flows, ledger entries, and platform status.
+        </p>
       </div>
 
       {error && (

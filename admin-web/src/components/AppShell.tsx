@@ -78,11 +78,12 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
-
       {/* Sidebar Container */}
       <div className={`
-        ${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : 'relative z-20'}
+        h-full flex-shrink-0
+        ${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out sidebar-expanded' : 'relative z-20 overflow-hidden'}
         ${isMobile && !mobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}
+        ${!isMobile && (sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded')}
       `}>
         <Sidebar 
           collapsed={sidebarCollapsed} 

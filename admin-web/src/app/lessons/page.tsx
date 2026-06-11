@@ -330,34 +330,34 @@ export default function LessonsPage() {
       {/* Create Lesson Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="glass-panel w-full max-w-2xl rounded-3xl border theme-border overflow-hidden shadow-2xl animate-in zoom-in duration-200 bg-[#090d16]">
+          <div className="glass-panel w-full max-w-2xl rounded-3xl border theme-border flex flex-col max-h-[90vh] overflow-hidden shadow-2xl animate-in zoom-in duration-200 bg-white dark:bg-[#090d16]">
             {/* Header */}
             <div className="p-6 border-b theme-border flex items-center justify-between bg-slate-100/50 dark:bg-[#0d1223]/30">
               <h3 className="text-lg font-bold theme-text-primary flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-indigo-500" />
                 Upload New Class / Lesson
               </h3>
-              <button onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg theme-text-secondary hover:theme-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <button type="button" onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg theme-text-secondary hover:theme-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Form */}
-            <form onSubmit={handleCreateLesson} className="p-6 space-y-4">
+            <form onSubmit={handleCreateLesson} className="p-6 space-y-4 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Title EN */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold theme-text-secondary">Title (English) *</label>
                   <input type="text" required value={createTitle} onChange={(e) => setCreateTitle(e.target.value)}
                     placeholder="e.g. Introduction to Quadratic Equations"
-                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500" />
                 </div>
                 {/* Title SW */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold theme-text-secondary">Title (Swahili)</label>
                   <input type="text" value={createTitleSw} onChange={(e) => setCreateTitleSw(e.target.value)}
                     placeholder="e.g. Utangulizi wa Milinganyo ya Kipeo cha Pili"
-                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500" />
                 </div>
               </div>
 
@@ -366,7 +366,7 @@ export default function LessonsPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold theme-text-secondary">Subject Area</label>
                   <select value={createSubject} onChange={(e) => setCreateSubject(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary">
                     {['MATH', 'PHYSICS', 'CHEMISTRY', 'BIOLOGY', 'ENGLISH', 'KISWAHILI', 'HISTORY', 'GEOGRAPHY', 'ACCOUNTS'].map(sub => (
                       <option key={sub} value={sub}>{sub}</option>
                     ))}
@@ -376,7 +376,7 @@ export default function LessonsPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold theme-text-secondary">Form Level</label>
                   <select value={createFormLevel} onChange={(e) => setCreateFormLevel(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary">
                     {['FORM_1', 'FORM_2', 'FORM_3', 'FORM_4', 'FORM_5', 'FORM_6', 'STD_1', 'STD_2', 'STD_3', 'STD_4', 'STD_5', 'STD_6', 'STD_7'].map(lvl => (
                       <option key={lvl} value={lvl}>{lvl.replace('_', ' ')}</option>
                     ))}
@@ -386,7 +386,7 @@ export default function LessonsPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold theme-text-secondary">Content Type</label>
                   <select value={createType} onChange={(e) => setCreateType(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary">
                     <option value="VIDEO">VIDEO</option>
                     <option value="PDF">PDF</option>
                   </select>
@@ -398,7 +398,7 @@ export default function LessonsPage() {
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold theme-text-secondary">Duration (Minutes)</label>
                   <input type="number" required value={createDurationMin} onChange={(e) => setCreateDurationMin(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]" />
+                    className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary" />
                 </div>
                 {/* Access */}
                 <div className="space-y-1.5">
@@ -423,18 +423,18 @@ export default function LessonsPage() {
                     <label className="text-xs font-semibold theme-text-secondary">PDF Document Source</label>
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setPdfSourceMode('upload')}
-                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${pdfSourceMode === 'upload' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${pdfSourceMode === 'upload' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary theme-item-bg'}`}>
                         Upload PDF to R2
                       </button>
                       <button type="button" onClick={() => setPdfSourceMode('url')}
-                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${pdfSourceMode === 'url' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${pdfSourceMode === 'url' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary theme-item-bg'}`}>
                         Enter URL manually
                       </button>
                     </div>
                   </div>
 
                   {pdfSourceMode === 'upload' ? (
-                    <div className="border border-dashed theme-border rounded-2xl p-6 text-center space-y-3 bg-[#0d1223]/30">
+                    <div className="border border-dashed theme-border rounded-2xl p-6 text-center space-y-3 bg-slate-100/50 dark:bg-[#0d1223]/30">
                       <input type="file" accept="application/pdf" id="pdf-upload" className="hidden" onChange={(e) => handleFileChange(e, 'PDF')} />
                       <label htmlFor="pdf-upload" className="cursor-pointer flex flex-col items-center gap-2">
                         <FileText className="w-10 h-10 text-indigo-400 animate-pulse" />
@@ -459,7 +459,7 @@ export default function LessonsPage() {
                       <label className="text-xs font-semibold theme-text-secondary">PDF Document URL *</label>
                       <input type="url" required value={createPdfUrl} onChange={(e) => setCreatePdfUrl(e.target.value)}
                         placeholder="https://pub-34ad9122863347229d18978333b69706.r2.dev/uploads/notes.pdf"
-                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500" />
                     </div>
                   )}
                 </div>
@@ -469,18 +469,18 @@ export default function LessonsPage() {
                     <label className="text-xs font-semibold theme-text-secondary">Video Content Source</label>
                     <div className="grid grid-cols-2 gap-2">
                       <button type="button" onClick={() => setVideoSourceMode('upload')}
-                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${videoSourceMode === 'upload' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${videoSourceMode === 'upload' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary theme-item-bg'}`}>
                         Upload Video to R2
                       </button>
                       <button type="button" onClick={() => setVideoSourceMode('url')}
-                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${videoSourceMode === 'url' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary bg-[#0c1222]'}`}>
+                        className={`py-2 text-xs font-bold rounded-xl border transition-all ${videoSourceMode === 'url' ? 'bg-indigo-600/15 border-indigo-500 text-indigo-400' : 'theme-border theme-text-secondary hover:theme-text-primary theme-item-bg'}`}>
                         Enter Video URL / ID manually
                       </button>
                     </div>
                   </div>
 
                   {videoSourceMode === 'upload' ? (
-                    <div className="border border-dashed theme-border rounded-2xl p-6 text-center space-y-3 bg-[#0d1223]/30">
+                    <div className="border border-dashed theme-border rounded-2xl p-6 text-center space-y-3 bg-slate-100/50 dark:bg-[#0d1223]/30">
                       <input type="file" accept="video/mp4,video/mkv,video/webm" id="video-upload" className="hidden" onChange={(e) => handleFileChange(e, 'VIDEO')} />
                       <label htmlFor="video-upload" className="cursor-pointer flex flex-col items-center gap-2">
                         <Video className="w-10 h-10 text-indigo-400 animate-pulse" />
@@ -505,7 +505,7 @@ export default function LessonsPage() {
                       <label className="text-xs font-semibold theme-text-secondary">Video URL or Asset ID *</label>
                       <input type="text" required value={createMuxAssetId} onChange={(e) => setCreateMuxAssetId(e.target.value)}
                         placeholder="e.g. Mux Asset ID or https://pub-34ad9122863347229d18978333b69706.r2.dev/video.mp4"
-                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 bg-[#0c1222]" />
+                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500" />
                     </div>
                   )}
                 </div>

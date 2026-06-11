@@ -299,14 +299,14 @@ export default function QuizzesPage() {
       {/* Create Quiz Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="glass-panel w-full max-w-3xl rounded-3xl border theme-border overflow-hidden shadow-2xl my-8 animate-in zoom-in duration-200 bg-[#090d16] flex flex-col max-h-[85vh]">
+          <div className="glass-panel w-full max-w-3xl rounded-3xl border theme-border overflow-hidden shadow-2xl my-8 animate-in zoom-in duration-200 bg-white dark:bg-[#090d16] flex flex-col max-h-[85vh]">
             {/* Header */}
             <div className="p-6 border-b theme-border flex items-center justify-between bg-slate-100/50 dark:bg-[#0d1223]/30">
               <h3 className="text-lg font-bold theme-text-primary flex items-center gap-2">
                 <Brain className="w-5 h-5 text-indigo-500" />
                 Create New Quiz
               </h3>
-              <button onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg theme-text-secondary hover:theme-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+              <button type="button" onClick={() => setShowCreateModal(false)} className="p-1.5 rounded-lg theme-text-secondary hover:theme-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -317,7 +317,7 @@ export default function QuizzesPage() {
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold theme-text-secondary">Select Associated Class / Lesson *</label>
                 <select required value={createLessonId} onChange={(e) => setCreateLessonId(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary">
                   <option value="" disabled>-- Select a Lesson --</option>
                   {lessons.map(l => (
                     <option key={l.id} value={l.id}>{l.title} ({l.subject} - {l.form_level.replace('_', ' ')})</option>
@@ -329,13 +329,13 @@ export default function QuizzesPage() {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h4 className="text-sm font-bold theme-text-primary">Questions ({questions.length})</h4>
-                  <button type="button" onClick={addQuestion} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0f172a] text-indigo-400 hover:bg-indigo-600/10 text-xs font-bold rounded-lg transition-colors border border-indigo-500/25">
+                  <button type="button" onClick={addQuestion} className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-indigo-500 dark:text-indigo-400 text-xs font-bold rounded-lg transition-colors border theme-border">
                     <Plus className="w-3.5 h-3.5" /> Add Question
                   </button>
                 </div>
 
                 {questions.map((q, qIndex) => (
-                  <div key={qIndex} className="p-5 rounded-2xl border theme-border bg-[#0d1324]/50 space-y-4 relative">
+                  <div key={qIndex} className="p-5 rounded-2xl border theme-border bg-slate-50 dark:bg-[#0d1324]/50 space-y-4 relative">
                     <div className="absolute top-4 right-4">
                       {questions.length > 1 && (
                         <button type="button" onClick={() => removeQuestion(qIndex)} className="p-1 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors">
@@ -354,14 +354,14 @@ export default function QuizzesPage() {
                         <label className="text-xs font-semibold theme-text-secondary">Question (English) *</label>
                         <input type="text" required value={q.question_text_en} onChange={(e) => updateQuestion(qIndex, { question_text_en: e.target.value })}
                           placeholder="e.g. What is the value of Pi?"
-                          className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]" />
+                          className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary" />
                       </div>
                       {/* Question SW */}
                       <div className="space-y-1.5">
                         <label className="text-xs font-semibold theme-text-secondary">Question (Swahili)</label>
                         <input type="text" value={q.question_text_sw} onChange={(e) => updateQuestion(qIndex, { question_text_sw: e.target.value })}
                           placeholder="e.g. Nini thamani ya Pi?"
-                          className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]" />
+                          className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary" />
                       </div>
                     </div>
 
@@ -369,7 +369,7 @@ export default function QuizzesPage() {
                     <div className="space-y-1.5">
                       <label className="text-xs font-semibold theme-text-secondary">Question Type</label>
                       <select value={q.question_type} onChange={(e) => updateQuestion(qIndex, { question_type: e.target.value })}
-                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]">
+                        className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary">
                         <option value="MULTIPLE_CHOICE">Multiple Choice</option>
                         <option value="TEXT_ANSWER">Written Answer / Text</option>
                         <option value="PHOTO_UPLOAD">Photo / Upload Response</option>
@@ -393,7 +393,7 @@ export default function QuizzesPage() {
                               </button>
                               <input type="text" required={q.question_type === 'MULTIPLE_CHOICE'} value={opt} onChange={(e) => updateOption(qIndex, optIndex, e.target.value)}
                                 placeholder={`Option ${String.fromCharCode(65 + optIndex)}`}
-                                className="w-full px-3 py-2 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-xs theme-text-primary bg-[#0c1222]" />
+                                className="w-full px-3 py-2 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-xs theme-text-primary" />
                             </div>
                           ))}
                         </div>
@@ -405,7 +405,7 @@ export default function QuizzesPage() {
                         <label className="text-xs font-semibold theme-text-secondary">Expected Correct Answer Text</label>
                         <input type="text" value={q.correct_answer_text} onChange={(e) => updateQuestion(qIndex, { correct_answer_text: e.target.value })}
                           placeholder="e.g. 3.14"
-                          className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary bg-[#0c1222]" />
+                          className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary" />
                       </div>
                     )}
 

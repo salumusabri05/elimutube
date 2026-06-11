@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CheckCircle, XCircle, Clock, Eye, ShieldAlert, AlertCircle } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Eye, ShieldAlert, AlertCircle, X, Plus, UserPlus } from 'lucide-react';
 import { apiRequest } from '@/lib/api';
 
 export default function TeachersPage() {
@@ -10,6 +10,17 @@ export default function TeachersPage() {
   const [error, setError] = useState('');
   const [filterText, setFilterText] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+
+  // Modal & form states for creating new teachers
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [bio, setBio] = useState('');
+  const [introVideoUrl, setIntroVideoUrl] = useState('');
+  const [verificationStatus, setVerificationStatus] = useState<'APPROVED' | 'PENDING' | 'REJECTED'>('APPROVED');
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState('');
 
   const fetchTeachers = async () => {
     try {
@@ -41,6 +52,53 @@ export default function TeachersPage() {
     }
   };
 
+  const handleCreateTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setCreating(true);
+      setCreateError('');
+      
+      const payload = {
+        email,
+        display_name: displayName,
+        phone: phone || undefined,
+        roles: ['TEACHER'],
+        active_role: 'TEACHER',
+        teacher_profile: {
+          create: {
+            bio: bio || 'ElimuTube verified educator.',
+            intro_video_url: introVideoUrl || undefined,
+            verification_status: verificationStatus,
+          }
+        }
+      };
+
+      await apiRequest('users', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      // Reset form fields
+      setEmail('');
+      setDisplayName('');
+      setPhone('');
+      setBio('');
+      setIntroVideoUrl('');
+      setVerificationStatus('APPROVED');
+      
+      // Close modal
+      setIsCreateModalOpen(false);
+      
+      // Refresh list
+      fetchTeachers();
+    } catch (err: any) {
+      console.error(err);
+      setCreateError(err.message || 'Failed to create teacher user.');
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const filteredTeachers = teachers.filter((t) => {
     const name = (t.display_name || '').toLowerCase();
     const email = (t.email || '').toLowerCase();
@@ -63,6 +121,13 @@ export default function TeachersPage() {
           <p className="text-sm mt-1 theme-text-secondary">Audit verification documents, manage teacher profiles, and handle subject assignments.</p>
         </div>
         <div className="flex gap-3">
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-amber-600/15 transition-all duration-200 cursor-pointer flex items-center gap-1.5"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            Create New Teacher
+          </button>
           <div className="glass-panel px-4 py-2 rounded-xl text-xs font-semibold theme-border border theme-text-secondary flex items-center gap-2">
             <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full badge-glow-yellow animate-pulse" />
             {pendingCount} Pending Verifications
@@ -87,12 +152,12 @@ export default function TeachersPage() {
               placeholder="Filter by name or email..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="px-4 py-2 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary placeholder-slate-500 w-64"
+              className="px-4 py-2 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary placeholder-slate-500 w-64"
             />
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#090b16] border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-secondary"
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#090b16] border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-secondary"
             >
               <option value="All">All Statuses</option>
               <option value="Pending">Pending</option>
@@ -105,7 +170,7 @@ export default function TeachersPage() {
         <div className="overflow-x-auto">
           {loading ? (
             <div className="flex justify-center items-center py-20">
-              <span className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+              <span className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : filteredTeachers.length === 0 ? (
             <div className="text-center py-20 theme-text-secondary">
@@ -129,7 +194,7 @@ export default function TeachersPage() {
                     <tr key={t.id} className="theme-item-hover transition-colors">
                       <td className="px-6 py-5 whitespace-nowrap">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1b1e35] to-[#252a4e] flex items-center justify-center font-bold text-indigo-400 border border-indigo-500/10">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#1b1e35] to-[#252a4e] flex items-center justify-center font-bold text-amber-500 border border-amber-500/10">
                             {t.display_name?.charAt(0) || t.email.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -150,7 +215,7 @@ export default function TeachersPage() {
                                 href={doc.document_url} 
                                 target="_blank"
                                 rel="noreferrer"
-                                className="flex items-center gap-2 text-xs theme-text-secondary hover:text-indigo-400 transition-colors"
+                                className="flex items-center gap-2 text-xs theme-text-secondary hover:text-amber-500 transition-colors"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                                 <span className="underline decoration-slate-600 underline-offset-2">
@@ -209,6 +274,133 @@ export default function TeachersPage() {
           )}
         </div>
       </div>
+
+      {/* Create Teacher Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="glass-panel w-full max-w-xl rounded-3xl border theme-border overflow-hidden shadow-2xl my-8 animate-in zoom-in duration-200 bg-white dark:bg-[#090d16] flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="p-6 border-b theme-border flex items-center justify-between bg-slate-100/50 dark:bg-[#0d1223]/30">
+              <h3 className="text-lg font-bold theme-text-primary flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-amber-500" />
+                Register New Teacher
+              </h3>
+              <button 
+                type="button" 
+                onClick={() => setIsCreateModalOpen(false)} 
+                className="p-1.5 rounded-lg theme-text-secondary hover:theme-text-primary hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Form Content */}
+            <form onSubmit={handleCreateTeacher} className="flex-1 overflow-y-auto p-6 space-y-4">
+              {createError && (
+                <div className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/25 rounded-xl text-red-400 text-xs">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{createError}</span>
+                </div>
+              )}
+
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold theme-text-secondary">Full Name (Display Name) *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g., Mwalimu John Mushi"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary placeholder-slate-500"
+                />
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold theme-text-secondary">Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g., teacher@elimutube.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary placeholder-slate-500"
+                />
+              </div>
+
+              {/* Phone Number */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold theme-text-secondary">Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  placeholder="e.g., +255 712 345 678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary placeholder-slate-500"
+                />
+              </div>
+
+              {/* Professional Bio */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold theme-text-secondary">Professional Bio (Optional)</label>
+                <textarea
+                  placeholder="Tell us about the teacher's qualifications, subjects, and experience..."
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary placeholder-slate-500 resize-none"
+                />
+              </div>
+
+              {/* Intro Video URL */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold theme-text-secondary">Intro Video Link (YouTube or Vimeo, Optional)</label>
+                <input
+                  type="url"
+                  placeholder="e.g., https://youtube.com/watch?v=..."
+                  value={introVideoUrl}
+                  onChange={(e) => setIntroVideoUrl(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary placeholder-slate-500"
+                />
+              </div>
+
+              {/* Verification Status */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold theme-text-secondary">Initial Verification Status</label>
+                <select
+                  value={verificationStatus}
+                  onChange={(e) => setVerificationStatus(e.target.value as any)}
+                  className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-amber-500 text-sm theme-text-primary"
+                >
+                  <option value="APPROVED">Approved (Verified & Active)</option>
+                  <option value="PENDING">Pending (Awaiting Document Audit)</option>
+                  <option value="REJECTED">Rejected (Suspended / Restricted)</option>
+                </select>
+              </div>
+
+              {/* Form Actions */}
+              <div className="pt-4 flex items-center justify-end gap-3 border-t theme-border">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 theme-text-secondary hover:theme-text-primary font-semibold rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={creating}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-amber-600/10 transition-all duration-200 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {creating ? 'Saving...' : 'Register Teacher'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
