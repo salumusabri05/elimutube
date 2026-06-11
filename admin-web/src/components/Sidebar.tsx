@@ -103,7 +103,7 @@ export default function Sidebar({ collapsed, onToggle, isMobile, onMobileClose }
     style={{ boxShadow: '2px 0 24px 0 var(--shadow-color)' }}>
 
       {/* Brand Header */}
-      <div className="flex items-center px-4 h-16 flex-shrink-0">
+      <div className="flex items-center px-4 h-16 flex-shrink-0 sidebar-brand-header">
         <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-500 flex items-center justify-center shadow-lg shadow-amber-500/15 relative flex-shrink-0">
           <BookOpen className="w-4 h-4 text-white" />
           <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full shadow-sm shadow-emerald-400/40 animate-pulse" />

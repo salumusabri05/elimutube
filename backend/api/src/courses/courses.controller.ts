@@ -13,18 +13,21 @@ export class CoursesController {
   // ──────────────────────────────────────────────────
 
   @Get()
-  @ApiOperation({ summary: 'List all published courses, optionally filtered by subject or form level' })
+  @ApiOperation({ summary: 'List all published courses, optionally filtered by subject, form level, or status' })
   @ApiQuery({ name: 'subject', required: false, enum: SubjectArea })
   @ApiQuery({ name: 'form_level', required: false, enum: FormLevel })
   @ApiQuery({ name: 'teacher_id', required: false, type: String })
+  @ApiQuery({ name: 'status', required: false, type: String, description: "Filter by status or 'ALL'" })
   async getCourses(
     @Query('subject') subject?: SubjectArea,
     @Query('form_level') form_level?: FormLevel,
     @Query('teacher_id') teacher_id?: string,
+    @Query('status') status?: string,
   ) {
+    const statusFilter = status === 'ALL' ? undefined : (status as CourseStatus || CourseStatus.PUBLISHED);
     return this.prisma.course.findMany({
       where: {
-        status: CourseStatus.PUBLISHED,
+        ...(statusFilter && { status: statusFilter }),
         ...(subject && { subject }),
         ...(form_level && { form_level }),
         ...(teacher_id && { teacher_id }),
@@ -78,6 +81,7 @@ export class CoursesController {
         thumbnail_url: { type: 'string' },
         is_free: { type: 'boolean' },
         price_tsh: { type: 'number' },
+        status: { type: 'string', enum: Object.values(CourseStatus) },
       },
     },
   })
@@ -94,6 +98,7 @@ export class CoursesController {
         thumbnail_url: body.thumbnail_url,
         is_free: body.is_free ?? false,
         price_tsh: body.price_tsh ?? 0,
+        status: body.status ?? CourseStatus.PUBLISHED,
       },
     });
   }

@@ -14,6 +14,7 @@ export default function CoursesPage() {
 
   // Form states for Course creation
   const [showCreateCourse, setShowCreateCourse] = useState(false);
+  const [teachers, setTeachers] = useState<any[]>([]);
   const [newCourse, setNewCourse] = useState({
     title: '',
     title_sw: '',
@@ -34,14 +35,23 @@ export default function CoursesPage() {
     try {
       setLoading(true);
       setError('');
-      // In the real system, it lists courses via GET /courses
-      const data = await apiRequest('courses');
+      // Fetch all courses (DRAFT, PUBLISHED, etc.) for admin visibility
+      const data = await apiRequest('courses?status=ALL');
       setCourses(data);
     } catch (err: any) {
       console.error(err);
       setError('Failed to load courses. Make sure the backend is running.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTeachers = async () => {
+    try {
+      const data = await apiRequest('users/teachers');
+      setTeachers(data);
+    } catch (err) {
+      console.error('Failed to load teachers:', err);
     }
   };
 
@@ -60,6 +70,7 @@ export default function CoursesPage() {
 
   useEffect(() => {
     fetchCourses();
+    fetchTeachers();
   }, []);
 
   const handleCreateCourse = async (e: React.FormEvent) => {
@@ -69,10 +80,19 @@ export default function CoursesPage() {
       return;
     }
     try {
-      await apiRequest('courses', {
+      const createdCourse = await apiRequest('courses', {
         method: 'POST',
         body: JSON.stringify(newCourse),
       });
+
+      // Immediately patch status to PUBLISHED so it's active in production database
+      if (createdCourse && createdCourse.id) {
+        await apiRequest(`courses/${createdCourse.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ status: 'PUBLISHED' }),
+        });
+      }
+
       setShowCreateCourse(false);
       setNewCourse({
         title: '',
@@ -391,15 +411,20 @@ export default function CoursesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold theme-text-secondary">Teacher User ID</label>
-                  <input 
-                    type="text" 
+                  <label className="text-xs font-bold theme-text-secondary">Assigned Teacher *</label>
+                  <select 
+                    required
                     value={newCourse.teacher_id} 
                     onChange={(e) => setNewCourse({ ...newCourse, teacher_id: e.target.value })}
-                    placeholder="UUID of teacher account" 
                     className="w-full px-4 py-2.5 rounded-xl theme-item-bg border theme-border focus:outline-none focus:border-indigo-500 text-sm theme-text-primary"
-                    required
-                  />
+                  >
+                    <option value="" disabled>-- Select a Teacher --</option>
+                    {teachers.map(t => (
+                      <option key={t.id} value={t.id}>
+                        {t.display_name || 'Teacher candidate'} ({t.email})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold theme-text-secondary">Price (TSh)</label>

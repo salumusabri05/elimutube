@@ -198,29 +198,40 @@ body {
 .theme-sidebar-footer-bg { background-color: var(--sidebar-footer-bg); }
 
 /* ─── Sidebar Collapse Transition ─── */
+.sidebar-container {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 .sidebar-expanded {
   width: 272px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-collapsed {
   width: 72px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-brand-header {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar-collapsed .sidebar-brand-header {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
 }
 .sidebar-label {
   opacity: 1;
   transform: translateX(0);
-  transition: opacity 0.2s ease, transform 0.25s ease, width 0.25s cubic-bezier(0.4, 0, 0.2, 1), margin 0.25s ease;
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), height 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.25s cubic-bezier(0.4, 0, 0.2, 1), margin 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
-  overflow: hidden;
-  display: inline-block;
+  height: auto;
 }
 .sidebar-collapsed .sidebar-label {
   opacity: 0;
-  transform: translateX(-8px);
-  transition: opacity 0.15s ease, transform 0.2s ease, width 0.2s cubic-bezier(0.4, 0, 0.2, 1), margin 0.2s ease;
-  width: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  transform: translateX(-10px);
+  pointer-events: none;
+  height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: hidden;
 }
 
 /* Collapsed state item & layout overrides */
@@ -230,18 +241,21 @@ body {
 .sidebar-collapsed .hidden-expanded {
   display: block;
 }
-.sidebar-expanded .sidebar-expand-btn {
-  display: none;
+.sidebar-footer-avatar-sec {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-collapsed .sidebar-footer-avatar-sec {
-  display: none;
+  opacity: 0;
+  width: 0;
+  pointer-events: none;
+  overflow: hidden;
+  margin: 0;
 }
-.sidebar-collapsed .sidebar-footer-actions {
-  display: none;
-}
-.sidebar-collapsed .sidebar-expand-btn {
-  display: block;
-  margin: 0 auto;
+.sidebar-item-link {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .sidebar-collapsed .sidebar-item-link {
   justify-content: center;

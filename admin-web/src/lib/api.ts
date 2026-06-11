@@ -16,7 +16,10 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
 
   Object.assign(headers, options.headers);
 
-  const response = await fetch(`${API_BASE}/${endpoint.replace(/^\//, '')}`, {
+  const url = `${API_BASE}/${endpoint.replace(/^\//, '')}`;
+  console.log(`[API Request] fetching: ${url}`);
+
+  const response = await fetch(url, {
     ...options,
     headers,
   });

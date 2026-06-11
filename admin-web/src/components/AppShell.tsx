@@ -15,20 +15,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Handle window resize
   useEffect(() => {
+    let lastWidth = window.innerWidth;
+
     const handleResize = () => {
       const width = window.innerWidth;
-      setIsMobile(width < 768);
-      if (width < 1024 && !sidebarCollapsed) {
-        setSidebarCollapsed(true);
-      } else if (width >= 1024 && sidebarCollapsed && !isMobile) {
-        setSidebarCollapsed(false);
+      const wasMobile = lastWidth < 768;
+      const isNowMobile = width < 768;
+
+      if (isNowMobile !== wasMobile) {
+        setIsMobile(isNowMobile);
       }
+
+      const wasBelowThreshold = lastWidth < 1024;
+      const isNowBelowThreshold = width < 1024;
+
+      if (wasBelowThreshold !== isNowBelowThreshold) {
+        setSidebarCollapsed(isNowBelowThreshold);
+      }
+
+      lastWidth = width;
     };
 
-    handleResize(); // Initial check
+    // Set initial values
+    setIsMobile(window.innerWidth < 768);
+    setSidebarCollapsed(window.innerWidth < 1024);
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarCollapsed, isMobile]);
+  }, []);
 
   useEffect(() => {
     // Check if admin is authenticated (mock auth using localStorage)
@@ -80,7 +94,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       )}
       {/* Sidebar Container */}
       <div className={`
-        h-full flex-shrink-0
+        h-full flex-shrink-0 sidebar-container
         ${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out sidebar-expanded' : 'relative z-20 overflow-hidden'}
         ${isMobile && !mobileMenuOpen ? '-translate-x-full' : 'translate-x-0'}
         ${!isMobile && (sidebarCollapsed ? 'sidebar-collapsed' : 'sidebar-expanded')}

@@ -32,14 +32,13 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
   };
 
   return (
-    <header className="h-16 bg-[var(--nav-bg)] backdrop-blur-2xl px-4 md:px-6 flex items-center justify-between relative z-20 transition-colors duration-300"
-            style={{ boxShadow: '0 1px 0 0 var(--surface-divider)' }}>
+    <header className="h-16 bg-white/95 dark:bg-[#0b0f19]/95 backdrop-blur-md px-4 md:px-6 flex items-center justify-between relative z-30 border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
       
       <div className="flex items-center gap-4">
         {/* Mobile Menu Trigger */}
         <button 
           onClick={onMenuClick}
-          className="p-2 -ml-2 rounded-xl theme-item-hover theme-text-secondary hover:theme-text-primary md:hidden transition-colors"
+          className="p-2 -ml-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-250 md:hidden transition-colors"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -49,40 +48,39 @@ export default function Navbar({ onMenuClick }: NavbarProps) {
           <input 
             type="text" 
             placeholder="Global system search..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-[var(--item-bg)] focus:bg-[var(--card-bg)] border-none ring-1 ring-inset ring-[var(--surface-divider)] focus:ring-2 focus:ring-indigo-500/50 outline-none text-xs theme-text-primary placeholder-slate-500 transition-all shadow-sm"
+            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/50 focus:bg-white dark:focus:bg-slate-950 focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition-all shadow-sm"
           />
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3 top-2.5" />
         </div>
       </div>
 
       {/* Actions */}
       <div className="flex items-center gap-2 md:gap-3">
 
-
         {/* Theme Toggle */}
         <button 
           onClick={toggleTheme}
-          className="p-2 rounded-xl theme-item-bg ring-1 ring-inset ring-[var(--surface-divider)] theme-text-secondary hover:theme-text-primary hover:bg-[var(--item-hover)] transition-all shadow-sm"
+          className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all shadow-sm"
           title="Toggle Theme"
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-500" />}
+          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-400" />}
         </button>
 
         {/* Notifications */}
         <button 
           onClick={() => router.push('/notifications')}
-          className="p-2 rounded-xl theme-item-bg ring-1 ring-inset ring-[var(--surface-divider)] theme-text-secondary hover:theme-text-primary hover:bg-[var(--item-hover)] transition-all relative shadow-sm"
+          className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800/80 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-all relative shadow-sm"
         >
           <Bell className="w-4 h-4" />
           <span className="absolute top-1 right-1 w-2 h-2 bg-indigo-500 rounded-full badge-glow-yellow" />
         </button>
 
-        <div className="h-6 w-px bg-[var(--surface-divider)] mx-1 hidden md:block" />
+        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 hidden md:block" />
 
         {/* Logout */}
         <button 
           onClick={handleLogout}
-          className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/15 text-red-500 text-xs font-semibold transition-all"
+          className="hidden md:flex items-center gap-2 px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/15 text-red-500 hover:text-red-600 text-xs font-semibold transition-all"
         >
           <LogOut className="w-3.5 h-3.5" />
           <span>Log Out</span>

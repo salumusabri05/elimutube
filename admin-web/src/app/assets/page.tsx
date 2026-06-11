@@ -15,7 +15,7 @@ export default function AssetsPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadMethod, setUploadMethod] = useState<'presigned' | 'standard'>('presigned');
+  const [uploadMethod, setUploadMethod] = useState<'presigned' | 'standard'>('standard');
   const [uploaderId, setUploaderId] = useState('');
 
   const fetchAssets = async () => {
