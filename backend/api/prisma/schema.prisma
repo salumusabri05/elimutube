@@ -688,3 +688,38 @@ model StudentGroupMember {
 
   @@unique([group_id, user_id])
 }
+
+// ====================================================
+// ASSET MANAGEMENT
+// Tracks every uploaded file (videos, PDFs, images)
+// ====================================================
+
+enum AssetStorage {
+  R2          // Cloudflare R2 (production)
+  LOCAL       // Local disk (dev fallback)
+  MUX         // Mux video asset
+}
+
+enum AssetType {
+  VIDEO
+  PDF
+  IMAGE
+  AUDIO
+  OTHER
+}
+
+model Asset {
+  id            String       @id @default(uuid())
+  uploader_id   String?
+  original_name String
+  stored_name   String       @unique
+  mime_type     String
+  size_bytes    Int
+  asset_type    AssetType
+  storage       AssetStorage @default(R2)
+  public_url    String
+  bucket        String?
+  is_public     Boolean      @default(true)
+  created_at    DateTime     @default(now())
+}
+

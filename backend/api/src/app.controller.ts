@@ -22,84 +22,238 @@ export class AppController {
     return this.appService.getHello();
   }
 
+  // ─────────────────────────────────────────────────────
+  // ASSET MANAGEMENT
+  // ─────────────────────────────────────────────────────
+
+  /** Allowed MIME types and corresponding asset types */
+  private readonly ALLOWED_TYPES: Record<string, 'VIDEO' | 'PDF' | 'IMAGE' | 'AUDIO'> = {
+    'video/mp4': 'VIDEO',
+    'video/webm': 'VIDEO',
+    'video/quicktime': 'VIDEO',
+    'application/pdf': 'PDF',
+    'image/jpeg': 'IMAGE',
+    'image/png': 'IMAGE',
+    'image/webp': 'IMAGE',
+    'audio/mpeg': 'AUDIO',
+    'audio/wav': 'AUDIO',
+  };
+
+  private readonly MAX_FILE_SIZE_BYTES = 500 * 1024 * 1024; // 500 MB
+
+  private getS3Client() {
+    const { S3Client } = require('@aws-sdk/client-s3');
+    return new S3Client({
+      endpoint: process.env.CLOUDFLARE_R2_ENDPOINT || 'https://e2e18bf082598b060cbc6004d62bb96f.r2.cloudflarestorage.com',
+      region: 'auto',
+      credentials: {
+        accessKeyId: process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+      },
+    });
+  }
+
+  @ApiTags('admin-assets')
+  @Get('admin/assets')
+  @ApiOperation({ summary: 'List all uploaded assets tracked in the database' })
+  async listAssets() {
+    return this.prisma.asset.findMany({ orderBy: { created_at: 'desc' } });
+  }
+
   @ApiTags('admin-assets')
   @Post('admin/upload-asset')
   @UseInterceptors(FileInterceptor('file'))
-  @ApiOperation({ summary: 'Upload an asset file (video/PDF) to Cloudflare R2 or local storage' })
+  @ApiOperation({ summary: 'Upload a file to Cloudflare R2 with validation and asset tracking' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
-        file: {
-          type: 'string',
-          format: 'binary',
-        },
+        file: { type: 'string', format: 'binary' },
+        uploader_id: { type: 'string', description: 'Optional: user ID of the uploader' },
       },
     },
   })
-  async uploadAsset(@UploadedFile() file: any) {
-    if (!file) {
-      throw new Error('No file provided');
+  async uploadAsset(@UploadedFile() file: any, @Body() body: any) {
+    if (!file) throw new Error('No file provided');
+
+    // ── 1. File type validation ──────────────────────────────
+    const assetType = this.ALLOWED_TYPES[file.mimetype];
+    if (!assetType) {
+      throw new Error(
+        `File type "${file.mimetype}" is not allowed. Permitted types: video/mp4, video/webm, application/pdf, image/jpeg, image/png, image/webp, audio/mpeg`,
+      );
+    }
+
+    // ── 2. File size validation ──────────────────────────────
+    if (file.size > this.MAX_FILE_SIZE_BYTES) {
+      throw new Error(`File too large. Maximum allowed size is 500 MB (received ${(file.size / 1024 / 1024).toFixed(1)} MB)`);
     }
 
     const fileExt = path.extname(file.originalname);
-    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
-
+    const uniqueName = `${assetType.toLowerCase()}/${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+    const bucket = process.env.CLOUDFLARE_R2_BUCKET || 'elimu';
+    const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-34ad9122863347229d18978333b69706.r2.dev';
     const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
     const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-    const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-34ad9122863347229d18978333b69706.r2.dev';
 
-    // If R2 credentials are provided, perform actual upload to Cloudflare R2
+    let publicUrl: string;
+    let storage: 'R2' | 'LOCAL' = 'LOCAL';
+
+    // ── 3. Upload to Cloudflare R2 ───────────────────────────
     if (accessKeyId && secretAccessKey) {
       try {
-        const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
-        const s3 = new S3Client({
-          endpoint: 'https://e2e18bf082598b060cbc6004d62bb96f.r2.cloudflarestorage.com',
-          region: 'auto',
-          credentials: {
-            accessKeyId,
-            secretAccessKey,
-          },
-        });
-
+        const { PutObjectCommand } = require('@aws-sdk/client-s3');
+        const s3 = this.getS3Client();
         await s3.send(
           new PutObjectCommand({
-            Bucket: 'elimu',
+            Bucket: bucket,
             Key: uniqueName,
             Body: file.buffer,
             ContentType: file.mimetype,
           }),
         );
-
-        return {
-          success: true,
-          url: `${r2PublicUrl}/${uniqueName}`,
-          fileName: uniqueName,
-        };
+        publicUrl = `${r2PublicUrl}/${uniqueName}`;
+        storage = 'R2';
+        console.log(`✅ R2 upload successful: ${publicUrl}`);
       } catch (err: any) {
-        console.error('R2 upload failed, falling back to local storage:', err);
+        console.error('❌ R2 upload failed, falling back to local storage:', err.message);
+        // Fall through to local fallback
       }
     }
 
-    // Fallback: Save file locally on disk for development/testing
-    try {
+    // ── 4. Local fallback for dev environments ───────────────
+    if (!publicUrl!) {
       const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      const filePath = path.join(uploadDir, uniqueName);
-      fs.writeFileSync(filePath, file.buffer);
-
-      return {
-        success: true,
-        url: `${r2PublicUrl}/${uniqueName}`,
-        fileName: uniqueName,
-      };
-    } catch (err: any) {
-      throw new Error(`Failed to upload asset: ${err.message}`);
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      fs.writeFileSync(path.join(uploadDir, path.basename(uniqueName)), file.buffer);
+      publicUrl = `${r2PublicUrl}/${uniqueName}`;
+      storage = 'LOCAL';
+      console.warn(`⚠️  Stored locally (R2 credentials missing). Set CLOUDFLARE_R2_ACCESS_KEY_ID and CLOUDFLARE_R2_SECRET_ACCESS_KEY in .env`);
     }
+
+    // ── 5. Record asset in database ──────────────────────────
+    const asset = await this.prisma.asset.create({
+      data: {
+        uploader_id: body.uploader_id || null,
+        original_name: file.originalname,
+        stored_name: uniqueName,
+        mime_type: file.mimetype,
+        size_bytes: file.size,
+        asset_type: assetType as any,
+        storage: storage as any,
+        public_url: publicUrl,
+        bucket: storage === 'R2' ? bucket : null,
+      },
+    });
+
+    return {
+      success: true,
+      id: asset.id,
+      url: publicUrl,
+      storage,
+      asset_type: assetType,
+      size_mb: (file.size / 1024 / 1024).toFixed(2),
+    };
   }
+
+  @ApiTags('admin-assets')
+  @Post('admin/presign')
+  @ApiOperation({ summary: 'Generate a pre-signed R2 URL for direct client-to-bucket upload (large files)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['filename', 'content_type'],
+      properties: {
+        filename: { type: 'string', example: 'lecture-form4-physics.mp4' },
+        content_type: { type: 'string', example: 'video/mp4' },
+        uploader_id: { type: 'string' },
+      },
+    },
+  })
+  async getPresignedUrl(@Body() body: any) {
+    const assetType = this.ALLOWED_TYPES[body.content_type];
+    if (!assetType) throw new Error(`Content type "${body.content_type}" is not permitted`);
+
+    const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    if (!accessKeyId || !secretAccessKey) {
+      throw new Error('R2 credentials not configured. Set CLOUDFLARE_R2_ACCESS_KEY_ID and CLOUDFLARE_R2_SECRET_ACCESS_KEY in .env');
+    }
+
+    const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+    const { PutObjectCommand } = require('@aws-sdk/client-s3');
+
+    const ext = path.extname(body.filename) || '';
+    const storedName = `${assetType.toLowerCase()}/${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    const bucket = process.env.CLOUDFLARE_R2_BUCKET || 'elimu';
+    const r2PublicUrl = process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-34ad9122863347229d18978333b69706.r2.dev';
+
+    const s3 = this.getS3Client();
+    const command = new PutObjectCommand({ Bucket: bucket, Key: storedName, ContentType: body.content_type });
+    const presignedUrl = await getSignedUrl(s3, command, { expiresIn: 900 }); // 15 min TTL
+
+    // Pre-register a PENDING asset record so we can track it
+    const asset = await this.prisma.asset.create({
+      data: {
+        uploader_id: body.uploader_id || null,
+        original_name: body.filename,
+        stored_name: storedName,
+        mime_type: body.content_type,
+        size_bytes: 0, // updated after upload confirmation
+        asset_type: assetType as any,
+        storage: 'R2' as any,
+        public_url: `${r2PublicUrl}/${storedName}`,
+        bucket,
+      },
+    });
+
+    return {
+      upload_url: presignedUrl,
+      public_url: `${r2PublicUrl}/${storedName}`,
+      asset_id: asset.id,
+      expires_in_seconds: 900,
+    };
+  }
+
+  @ApiTags('admin-assets')
+  @Post('admin/assets/:id/confirm')
+  @ApiOperation({ summary: 'Confirm a pre-signed upload completed and update the asset size' })
+  @ApiParam({ name: 'id', type: String, description: 'Asset ID returned from /admin/presign' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['size_bytes'],
+      properties: { size_bytes: { type: 'number', description: 'Actual uploaded file size in bytes' } },
+    },
+  })
+  async confirmUpload(@Param('id') id: string, @Body() body: any) {
+    return this.prisma.asset.update({ where: { id }, data: { size_bytes: body.size_bytes } });
+  }
+
+  @ApiTags('admin-assets')
+  @Post('admin/assets/:id/delete')
+  @ApiOperation({ summary: 'Delete an asset record (and optionally the R2 object)' })
+  @ApiParam({ name: 'id', type: String })
+  async deleteAsset(@Param('id') id: string) {
+    const asset = await this.prisma.asset.findUniqueOrThrow({ where: { id } });
+
+    // If stored in R2 and credentials exist, delete the object too
+    const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+    const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+    if (asset.storage === 'R2' && accessKeyId && secretAccessKey) {
+      try {
+        const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+        await this.getS3Client().send(new DeleteObjectCommand({ Bucket: asset.bucket!, Key: asset.stored_name }));
+      } catch (err: any) {
+        console.error('R2 delete failed (DB record will still be removed):', err.message);
+      }
+    }
+
+    await this.prisma.asset.delete({ where: { id } });
+    return { success: true };
+  }
+
 
   @ApiTags('auth')
   @Post('auth/login')
