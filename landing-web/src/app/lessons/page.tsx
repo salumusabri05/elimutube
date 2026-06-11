@@ -404,6 +404,132 @@ export default function LessonsMarketingPage() {
           </div>
         </div>
 
+        {/* INTERACTIVE MICRO-QUIZ */}
+        <div className="flex flex-col gap-6">
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
+              {t("Try It Now", "Jaribu Sasa")}
+            </span>
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Test Your Knowledge", "Pima Uwezo Wako")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {t(
+                "Answer this sample NECTA-style question to experience how our interactive learning works inside the app.",
+                "Jibu swali hili la mfano la mtihani wa NECTA ili uone jinsi masomo yetu ya maingiliano yanavyofanya kazi ndani ya app."
+              )}
+            </p>
+          </div>
+
+          <div className="max-w-2xl mx-auto w-full p-6 rounded-2xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 flex flex-col gap-5">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+              <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-extrabold">BIOL</span>
+              <span>{t("Form 4 Biology", "Kidato cha 4 — Biolojia")}</span>
+            </div>
+
+            <p className="text-sm font-semibold text-slate-900 dark:text-white leading-relaxed">
+              {t(
+                "Which organelle is primarily responsible for the production of ATP through aerobic respiration?",
+                "Ni kiini-chembwe (organelle) gani kinachohusika zaidi na uzalishaji wa ATP kupitia upumuaji wa oksijeni?"
+              )}
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {[
+                { label: "A", en: "Ribosome", sw: "Raibosomi", correct: false },
+                { label: "B", en: "Mitochondria", sw: "Maitokondria", correct: true },
+                { label: "C", en: "Golgi apparatus", sw: "Golgi Aparatasi", correct: false },
+                { label: "D", en: "Endoplasmic Reticulum", sw: "Endoplazimiki Retikulum", correct: false },
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  onClick={(e) => {
+                    const allBtns = e.currentTarget.parentElement?.querySelectorAll("button");
+                    allBtns?.forEach((btn) => {
+                      btn.classList.remove("ring-2", "ring-emerald-500", "bg-emerald-50", "dark:bg-emerald-950/20", "ring-red-500", "bg-red-50", "dark:bg-red-950/20");
+                      btn.classList.add("opacity-60");
+                    });
+                    e.currentTarget.classList.remove("opacity-60");
+                    if (opt.correct) {
+                      e.currentTarget.classList.add("ring-2", "ring-emerald-500", "bg-emerald-50", "dark:bg-emerald-950/20");
+                    } else {
+                      e.currentTarget.classList.add("ring-2", "ring-red-500", "bg-red-50", "dark:bg-red-950/20");
+                    }
+                    // Show the explanation
+                    const explainer = document.getElementById("quiz-explainer");
+                    if (explainer) explainer.classList.remove("hidden");
+                  }}
+                  className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-700 transition duration-200 cursor-pointer"
+                >
+                  <span className="font-black text-slate-400 mr-2">{opt.label}.</span>
+                  {language === "SW" ? opt.sw : opt.en}
+                </button>
+              ))}
+            </div>
+
+            <div id="quiz-explainer" className="hidden p-4 rounded-xl bg-slate-50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 leading-relaxed animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <span className="font-bold text-emerald-600 dark:text-emerald-400 block mb-1">
+                {t("Correct Answer: B — Mitochondria", "Jibu Sahihi: B — Maitokondria")}
+              </span>
+              {t(
+                "Mitochondria are known as the 'powerhouses' of the cell. They produce most of the cell's ATP through aerobic respiration via the Krebs cycle and electron transport chain. This is a common NECTA question in Form 4 Biology.",
+                "Maitokondria yanajulikana kama 'vyanzo vya nishati' vya seli. Yanazalisha ATP nyingi kupitia upumuaji wa oksijeni kwa mzunguko wa Krebs na msururu wa usafirishaji wa elektroni. Hili ni swali la kawaida la NECTA katika Biolojia ya Kidato cha 4."
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* DATA SAVER & OFFLINE MODE */}
+        <div className="flex flex-col gap-8">
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              {t("Save Your Internet Data", "Okoa Data Yako ya Mtandao")}
+            </span>
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Download Once, Study Offline Forever", "Pakua Mara Moja, Soma Offline Milele")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {t(
+                "We understand internet bundles are expensive. Here's how to study without wasting any MB.",
+                "Tunaelewa vifurushi vya internet ni ghali. Hivi ndivyo unavyoweza kusoma bila kupoteza MB yoyote."
+              )}
+            </p>
+          </div>
+
+          <div className="max-w-3xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/20 flex flex-col gap-3 hover:-translate-y-1 transition duration-300">
+              <span className="text-2xl font-black text-emerald-500/30">01</span>
+              <h5 className="font-bold text-sm text-slate-900 dark:text-white">{t("Connect to Wi-Fi", "Unganisha na Wi-Fi")}</h5>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t(
+                  "Use your school Wi-Fi, an internet cafe, or cheap night bundles (e.g., Vodacom Midnight 1GB for 500 TZS) to download videos.",
+                  "Tumia Wi-Fi ya shule, internet cafe, au vifurushi vya usiku (mf. Vodacom Midnight 1GB kwa 500 TZS) kupakua masomo."
+                )}
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/20 flex flex-col gap-3 hover:-translate-y-1 transition duration-300">
+              <span className="text-2xl font-black text-emerald-500/30">02</span>
+              <h5 className="font-bold text-sm text-slate-900 dark:text-white">{t("Tap Download on Playlist", "Bonyeza Pakua kwenye Orodha")}</h5>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t(
+                  "Open any subject playlist and tap the download icon. The entire playlist saves to your phone's storage automatically.",
+                  "Fungua orodha ya masomo na ubonyeze alama ya kupakua. Masomo yote yatahifadhiwa kwenye kumbukumbu ya simu yako."
+                )}
+              </p>
+            </div>
+            <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900/20 flex flex-col gap-3 hover:-translate-y-1 transition duration-300">
+              <span className="text-2xl font-black text-emerald-500/30">03</span>
+              <h5 className="font-bold text-sm text-slate-900 dark:text-white">{t("Study Anywhere Offline", "Soma Popote Bila Mtandao")}</h5>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                {t(
+                  "Turn off mobile data completely. Open ElimuTube, go to your Downloads tab, and study your saved videos with zero internet usage.",
+                  "Zima data ya simu kabisa. Fungua ElimuTube, nenda kwenye sehemu ya Vipakuzi, na usome masomo uliyohifadhi bila kutumia internet yoyote."
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* CALL TO ACTION DOWLOAD BLOCK */}
         <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 p-8 sm:p-12 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
           <div className="flex flex-col gap-3 text-center md:text-left">

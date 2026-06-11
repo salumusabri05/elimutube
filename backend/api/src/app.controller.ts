@@ -3,6 +3,7 @@ import { AppService } from './app.service';
 import { PrismaService } from './prisma/prisma.service';
 import { PayoutStatus, PaymentStatus } from '@prisma/client';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody, ApiParam } from '@nestjs/swagger';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -13,13 +14,30 @@ export class AppController {
     private readonly prisma: PrismaService,
   ) {}
 
+  @ApiTags('general')
   @Get()
+  @ApiOperation({ summary: 'Get hello status' })
+  @ApiResponse({ status: 200, description: 'Hello message' })
   getHello(): string {
     return this.appService.getHello();
   }
 
+  @ApiTags('admin-assets')
   @Post('admin/upload-asset')
   @UseInterceptors(FileInterceptor('file'))
+  @ApiOperation({ summary: 'Upload an asset file (video/PDF) to Cloudflare R2 or local storage' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   async uploadAsset(@UploadedFile() file: any) {
     if (!file) {
       throw new Error('No file provided');
@@ -83,7 +101,19 @@ export class AppController {
     }
   }
 
+  @ApiTags('auth')
   @Post('auth/login')
+  @ApiOperation({ summary: 'Admin login endpoint' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: { type: 'string', example: 'admin@elimutube.com' },
+        password: { type: 'string', example: 'admin123' },
+      },
+    },
+  })
   async login(@Body() body: any) {
     const { email, password } = body;
     if (email === 'admin@elimutube.com' && password === 'admin123') {
@@ -100,7 +130,9 @@ export class AppController {
     throw new UnauthorizedException('Invalid admin credentials');
   }
 
+  @ApiTags('admin-dashboard')
   @Get('dashboard/stats')
+  @ApiOperation({ summary: 'Get summary statistics for the admin dashboard' })
   async getDashboardStats() {
     const teachersCount = await this.prisma.user.count({
       where: { roles: { has: 'TEACHER' } },
@@ -124,7 +156,9 @@ export class AppController {
     };
   }
 
+  @ApiTags('admin-payouts')
   @Get('payouts')
+  @ApiOperation({ summary: 'Get list of teacher payouts' })
   async getPayouts() {
     let payouts = await this.prisma.payout.findMany({
       include: { teacher: true },
@@ -185,7 +219,9 @@ export class AppController {
     }));
   }
 
+  @ApiTags('admin-payouts')
   @Post('payouts/process-all')
+  @ApiOperation({ summary: 'Settle all pending or processing payouts' })
   async processAllPayouts() {
     await this.prisma.payout.updateMany({
       where: { status: PayoutStatus.PENDING },
@@ -204,7 +240,9 @@ export class AppController {
     return { success: true };
   }
 
+  @ApiTags('admin-payments')
   @Get('payments')
+  @ApiOperation({ summary: 'Get recent student payments' })
   async getPayments() {
     let payments = await this.prisma.payment.findMany({
       include: { student: true },
@@ -267,7 +305,9 @@ export class AppController {
   // STUDENTS ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-students')
   @Get('students')
+  @ApiOperation({ summary: 'Get all students with progress and quiz summaries' })
   async getStudents() {
     const students = await this.prisma.user.findMany({
       where: { roles: { has: 'STUDENT' as any } },
@@ -304,7 +344,9 @@ export class AppController {
   // LESSONS MANAGEMENT ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-lessons')
   @Get('admin/lessons')
+  @ApiOperation({ summary: 'Get all lessons with metadata and analytics for admin panel' })
   async getAdminLessons() {
     const lessons = await this.prisma.lesson.findMany({
       include: {
@@ -346,7 +388,10 @@ export class AppController {
     }));
   }
 
+  @ApiTags('admin-lessons')
   @Post('admin/lessons/:id/unpublish')
+  @ApiOperation({ summary: 'Unpublish a lesson by ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Lesson ID' })
   async unpublishLesson(@Param('id') id: string) {
     await this.prisma.lesson.update({
       where: { id },
@@ -355,7 +400,10 @@ export class AppController {
     return { success: true };
   }
 
+  @ApiTags('admin-lessons')
   @Post('admin/lessons/:id/publish')
+  @ApiOperation({ summary: 'Publish a lesson by ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Lesson ID' })
   async publishLesson(@Param('id') id: string) {
     await this.prisma.lesson.update({
       where: { id },
@@ -364,7 +412,27 @@ export class AppController {
     return { success: true };
   }
 
+  @ApiTags('admin-lessons')
   @Post('admin/lessons/create')
+  @ApiOperation({ summary: 'Create a new lesson with optional teacher selection' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['title', 'subject', 'form_level'],
+      properties: {
+        title: { type: 'string' },
+        title_sw: { type: 'string' },
+        type: { type: 'string', enum: ['VIDEO', 'PDF', 'QUIZ', 'LIVE', 'INTERACTIVE'] },
+        subject: { type: 'string' },
+        form_level: { type: 'string' },
+        is_free: { type: 'boolean' },
+        duration_sec: { type: 'number' },
+        mux_asset_id: { type: 'string' },
+        pdf_url: { type: 'string' },
+        teacher_id: { type: 'string' },
+      },
+    },
+  })
   async createLesson(@Body() body: any) {
     let teacherId = body.teacher_id;
     if (!teacherId) {
@@ -402,7 +470,10 @@ export class AppController {
     });
   }
 
+  @ApiTags('admin-lessons')
   @Post('admin/lessons/:id/update')
+  @ApiOperation({ summary: 'Update a lesson by ID' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Lesson ID' })
   async updateLesson(@Param('id') id: string, @Body() body: any) {
     const data = { ...body };
     delete data.id;
@@ -416,7 +487,9 @@ export class AppController {
   // SUBSCRIPTIONS ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-subscriptions')
   @Get('subscriptions')
+  @ApiOperation({ summary: 'Get list of subscriptions' })
   async getSubscriptions() {
     const subs = await this.prisma.subscription.findMany({
       include: {
@@ -444,7 +517,10 @@ export class AppController {
     }));
   }
 
+  @ApiTags('admin-subscriptions')
   @Post('subscriptions/:id/cancel')
+  @ApiOperation({ summary: 'Cancel a student subscription' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Subscription ID' })
   async cancelSubscription(@Param('id') id: string) {
     await this.prisma.subscription.update({
       where: { id },
@@ -457,7 +533,9 @@ export class AppController {
   // REVENUE ANALYTICS ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-revenue')
   @Get('revenue/analytics')
+  @ApiOperation({ summary: 'Get monthly revenue, user growth, plan distributions and top spenders' })
   async getRevenueAnalytics() {
     const payments = await this.prisma.payment.findMany({
       where: { status: PaymentStatus.SUCCESS },
@@ -534,7 +612,9 @@ export class AppController {
   // QUIZ MANAGEMENT ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-quizzes')
   @Get('quizzes')
+  @ApiOperation({ summary: 'Get list of all quizzes and questions' })
   async getQuizzes() {
     const quizzes = await this.prisma.quiz.findMany({
       include: {
@@ -573,7 +653,33 @@ export class AppController {
     }));
   }
 
+  @ApiTags('admin-quizzes')
   @Post('quizzes/create')
+  @ApiOperation({ summary: 'Manually create a new quiz for a lesson' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['lesson_id', 'questions'],
+      properties: {
+        lesson_id: { type: 'string' },
+        questions: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['question_text_en', 'options'],
+            properties: {
+              question_text_en: { type: 'string' },
+              question_text_sw: { type: 'string' },
+              correct_answer_index: { type: 'number' },
+              question_type: { type: 'string', default: 'MULTIPLE_CHOICE' },
+              correct_answer_text: { type: 'string' },
+              options: { type: 'array', items: { type: 'string' } },
+            },
+          },
+        },
+      },
+    },
+  })
   async createQuiz(@Body() body: any) {
     const { lesson_id, questions } = body;
     const quiz = await this.prisma.quiz.create({
@@ -611,7 +717,10 @@ export class AppController {
     return { success: true, quiz_id: quiz.id };
   }
 
+  @ApiTags('admin-quizzes')
   @Post('quizzes/:id/delete')
+  @ApiOperation({ summary: 'Delete a quiz and its questions/results/options' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Quiz ID' })
   async deleteQuiz(@Param('id') id: string) {
     // Delete quiz results, options, questions, then quiz
     const questions = await this.prisma.quizQuestion.findMany({ where: { quiz_id: id } });
@@ -628,7 +737,9 @@ export class AppController {
   // AI SUMMARY ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-ai-summaries')
   @Get('ai-summaries')
+  @ApiOperation({ summary: 'Get list of all AI-generated lesson summaries' })
   async getAiSummaries() {
     const summaries = await this.prisma.aiSummary.findMany({
       include: {
@@ -650,7 +761,10 @@ export class AppController {
     }));
   }
 
+  @ApiTags('admin-ai-summaries')
   @Post('ai-summaries/:id/update')
+  @ApiOperation({ summary: 'Update English/Swahili text of an AI summary' })
+  @ApiParam({ name: 'id', type: 'string', description: 'AI Summary ID' })
   async updateAiSummary(@Param('id') id: string, @Body() body: any) {
     return this.prisma.aiSummary.update({
       where: { id },
@@ -661,7 +775,10 @@ export class AppController {
     });
   }
 
+  @ApiTags('admin-ai-summaries')
   @Post('ai-summaries/:id/delete')
+  @ApiOperation({ summary: 'Delete an AI summary' })
+  @ApiParam({ name: 'id', type: 'string', description: 'AI Summary ID' })
   async deleteAiSummary(@Param('id') id: string) {
     await this.prisma.aiSummary.delete({ where: { id } });
     return { success: true };
@@ -671,7 +788,9 @@ export class AppController {
   // CAPTIONS ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-captions')
   @Get('captions')
+  @ApiOperation({ summary: 'Get all lesson video captions' })
   async getCaptions() {
     const captions = await this.prisma.caption.findMany({
       include: {
@@ -690,12 +809,17 @@ export class AppController {
     }));
   }
 
+  @ApiTags('admin-captions')
   @Post('captions/create')
+  @ApiOperation({ summary: 'Add a new caption track for a lesson video' })
   async createCaption(@Body() body: any) {
     return this.prisma.caption.create({ data: body });
   }
 
+  @ApiTags('admin-captions')
   @Post('captions/:id/delete')
+  @ApiOperation({ summary: 'Delete a caption track' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Caption ID' })
   async deleteCaption(@Param('id') id: string) {
     await this.prisma.caption.delete({ where: { id } });
     return { success: true };
@@ -705,7 +829,9 @@ export class AppController {
   // STUDENT ANALYTICS ENDPOINTS
   // ============================================================
 
+  @ApiTags('admin-student-analytics')
   @Get('student-analytics')
+  @ApiOperation({ summary: 'Get aggregated student performance, score distribution and subject progress breakdown' })
   async getStudentAnalytics() {
     const progress = await this.prisma.lessonProgress.findMany({
       include: {
@@ -789,7 +915,9 @@ export class AppController {
   // DATABASE EXPLORER ENDPOINTS (generic CRUD)
   // ============================================================
 
+  @ApiTags('database-explorer')
   @Get('database/tables')
+  @ApiOperation({ summary: 'Get list of all database tables for admin explorer' })
   async getTables() {
     return [
       { name: 'user', label: 'Users' },
@@ -821,7 +949,10 @@ export class AppController {
     ];
   }
 
+  @ApiTags('database-explorer')
   @Get('database/tables/:table')
+  @ApiOperation({ summary: 'Get data rows from a specific database table' })
+  @ApiParam({ name: 'table', type: 'string', description: 'Table name in Prisma client' })
   async getTableData(@Param('table') table: string) {
     const model = (this.prisma as any)[table];
     if (!model) {
@@ -832,7 +963,10 @@ export class AppController {
     });
   }
 
+  @ApiTags('database-explorer')
   @Post('database/tables/:table')
+  @ApiOperation({ summary: 'Create a new row in a specific database table' })
+  @ApiParam({ name: 'table', type: 'string', description: 'Table name in Prisma client' })
   async createTableRow(@Param('table') table: string, @Body() body: any) {
     const model = (this.prisma as any)[table];
     if (!model) {
@@ -843,7 +977,11 @@ export class AppController {
     });
   }
 
+  @ApiTags('database-explorer')
   @Post('database/tables/:table/:id/update')
+  @ApiOperation({ summary: 'Update a specific row in a database table' })
+  @ApiParam({ name: 'table', type: 'string', description: 'Table name in Prisma client' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Row unique ID' })
   async updateTableRow(@Param('table') table: string, @Param('id') id: string, @Body() body: any) {
     const model = (this.prisma as any)[table];
     if (!model) {
@@ -857,7 +995,11 @@ export class AppController {
     });
   }
 
+  @ApiTags('database-explorer')
   @Post('database/tables/:table/:id/delete')
+  @ApiOperation({ summary: 'Delete a specific row in a database table' })
+  @ApiParam({ name: 'table', type: 'string', description: 'Table name in Prisma client' })
+  @ApiParam({ name: 'id', type: 'string', description: 'Row unique ID' })
   async deleteTableRow(@Param('table') table: string, @Param('id') id: string) {
     const model = (this.prisma as any)[table];
     if (!model) {

@@ -287,6 +287,95 @@ export default function TeachersMarketingPage() {
           </div>
         </div>
 
+        {/* MEET YOUR TEACHERS — SPOTLIGHT PROFILES */}
+        <div className="flex flex-col gap-8">
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
+              {t("Featured Educators", "Walimu Mashuhuri")}
+            </span>
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Meet the Teachers on ElimuTube", "Kutana na Walimu wa ElimuTube")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {t(
+                "Every teacher on our platform is verified, experienced, and trusted by thousands of Tanzanian students.",
+                "Kila mwalimu kwenye mfumo wetu amethibitishwa, ana uzoefu, na anaaminiwa na maelfu ya wanafunzi wa Kitanzania."
+              )}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Teacher 1 */}
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 hover:-translate-y-1 transition duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full blur-2xl -z-10" />
+              <div className="flex items-center gap-3">
+                <div className="size-12 rounded-full bg-gradient-to-br from-red-500 to-rose-400 flex items-center justify-center text-white font-black text-sm shadow-sm">HJ</div>
+                <div>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Mwalimu Halima Juma</h4>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{t("Biology & Chemistry", "Biolojia na Kemia")}</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="px-2 py-0.5 rounded-md bg-red-500/10 text-red-600 dark:text-red-400 text-[10px] font-bold">BIOL</span>
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">CHEM</span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold">{t("12+ yrs experience", "Uzoefu wa miaka 12+")}</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t(
+                  "Former head of science at Feza Girls. Known for practical experiment demonstrations and clear diagram explanations. Over 8,000 active students on her channel.",
+                  "Aliyekuwa mkuu wa idara ya sayansi Feza Girls. Anajulikana kwa maonyesho ya vitendo na michoro wazi. Zaidi ya wanafunzi 8,000 walio hai kwenye chaneli yake."
+                )}
+              </p>
+            </div>
+
+            {/* Teacher 2 */}
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 hover:-translate-y-1 transition duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl -z-10" />
+              <div className="flex items-center gap-3">
+                <div className="size-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-400 flex items-center justify-center text-white font-black text-sm shadow-sm">JM</div>
+                <div>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Mwalimu James Mollel</h4>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{t("Mathematics & Physics", "Hisabati na Fizikia")}</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold">MATH</span>
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] font-bold">PHYS</span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold">{t("NECTA Examiner Asst.", "Msaidizi wa Mtihani NECTA")}</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t(
+                  "Teaching at Mwanza Secondary for 15 years. Former NECTA examination assistant. Famous for simplifying electromagnetism and coordinate geometry. 12,000+ subscribers.",
+                  "Amefundisha Mwanza Secondary kwa miaka 15. Aliyekuwa msaidizi wa mitihani ya NECTA. Anajulikana kwa kurahisisha usumaku-umeme na jometri. Wanafunzi 12,000+."
+                )}
+              </p>
+            </div>
+
+            {/* Teacher 3 */}
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 hover:-translate-y-1 transition duration-300 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-violet-500/5 rounded-full blur-2xl -z-10" />
+              <div className="flex items-center gap-3">
+                <div className="size-12 rounded-full bg-gradient-to-br from-violet-500 to-purple-400 flex items-center justify-center text-white font-black text-sm shadow-sm">AN</div>
+                <div>
+                  <h4 className="font-bold text-sm text-slate-900 dark:text-white">Mwalimu Agnes Ngowi</h4>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{t("English & Kiswahili", "Kiingereza na Kiswahili")}</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                <span className="px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-600 dark:text-violet-400 text-[10px] font-bold">ENGL</span>
+                <span className="px-2 py-0.5 rounded-md bg-pink-500/10 text-pink-600 dark:text-pink-400 text-[10px] font-bold">KISW</span>
+                <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[10px] font-bold">{t("8+ yrs experience", "Uzoefu wa miaka 8+")}</span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t(
+                  "Bilingual language specialist from Arusha. Teaches literature analysis, essay writing, and Swahili grammar with real-world Tanzanian examples. 5,000+ active learners.",
+                  "Mtaalamu wa lugha kutoka Arusha. Anafundisha fasihi, insha, na sarufi ya Kiswahili kwa mifano ya Tanzania halisi. Wanafunzi 5,000+ walio hai."
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* CALL TO ACTION DOWNLOAD BLOCK */}
         <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-8 sm:p-12 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
           <div className="flex flex-col gap-3 text-center md:text-left">

@@ -54,12 +54,10 @@ export default function HomePage() {
     totalVolume: 0
   });
   const [statsLoading, setStatsLoading] = useState(true);
-  const [checkoutDialogOpen, setCheckoutDialogOpen] = useState(false);
   const [demoVideoOpen, setDemoVideoOpen] = useState(false);
   const [selectedForm, setSelectedForm] = useState<"form3" | "form4">("form4");
   const [selectedSubject, setSelectedSubject] = useState<"math" | "biology" | "physics" | "chemistry">("math");
   const [targetGrade, setTargetGrade] = useState<"A" | "B" | "C">("A");
-  const [pricingPeriod, setPricingPeriod] = useState<"monthly" | "quarterly" | "annual">("annual");
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   // Fetch real-time dashboard statistics from Railway backend
@@ -788,6 +786,75 @@ export default function HomePage() {
                 </div>
               );
             })}
+          </div>
+
+        </div>
+      </section>
+
+      {/* PARENT'S CORNER — PROGRESS TRACKING */}
+      <section className="py-20 border-t border-slate-200/80 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-950/30">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 flex flex-col gap-12">
+
+          <div className="text-center max-w-2xl mx-auto flex flex-col gap-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
+              {t("For Parents", "Kwa Wazazi")}
+            </span>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("Know Exactly How Your Child Studies", "Jua Kwa Usahihi Jinsi Mtoto Wako Anavyosoma")}
+            </h2>
+            <p className="text-sm text-slate-650 dark:text-slate-400">
+              {t(
+                "Parents are ElimuTube's most important partners. We give you full visibility into your child's learning activity — no guessing, no surprises.",
+                "Wazazi ni washirika muhimu zaidi wa ElimuTube. Tunakupa uwezo kamili wa kuona shughuli za masomo za mtoto wako — bila kukisia."
+              )}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 hover:-translate-y-1 transition duration-300">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="size-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-500 flex items-center justify-center font-black text-xs">01</span>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                  {t("Weekly SMS & WhatsApp Reports", "Ripoti za Kila Wiki kwa SMS na WhatsApp")}
+                </h4>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t(
+                  "Receive automated weekly summaries showing which subjects your child studied, total watch time, quiz scores, and areas that need more attention.",
+                  "Pokea muhtasari wa kiotomatiki kila wiki ukionyesha masomo aliyoyasoma mtoto wako, muda wa kutazama, alama za majaribio, na maeneo yanayohitaji msaada zaidi."
+                )}
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 hover:-translate-y-1 transition duration-300">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="size-8 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-black text-xs">02</span>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                  {t("Study Activity Dashboard", "Dashibodi ya Shughuli za Masomo")}
+                </h4>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t(
+                  "Log into the parent portal inside the app to see real-time data: which video playlists are being watched, daily study streaks, and preparation level for upcoming exams.",
+                  "Ingia kwenye sehemu ya mzazi ndani ya app kuona data ya wakati halisi: ni orodha zipi za video zinazotazamwa, mfuatano wa kusoma kila siku, na kiwango cha maandalizi ya mitihani."
+                )}
+              </p>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-850 flex flex-col gap-4 hover:-translate-y-1 transition duration-300">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="size-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-xs">03</span>
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white">
+                  {t("Affordable Compared to Tuition", "Nafuu Kuliko Tuition za Mtaani")}
+                </h4>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                {t(
+                  "Private tutoring costs 100,000–200,000 TZS monthly per subject. ElimuTube gives full access to every subject, AI tutor, and live classes — all for less than the price of one textbook.",
+                  "Tuition za mtaani zinagharimu 100,000–200,000 TZS kwa mwezi kwa somo moja. ElimuTube inatoa masomo yote, msaidizi wa AI, na madarasa ya live — yote kwa bei ya kitabu kimoja tu."
+                )}
+              </p>
+            </div>
           </div>
 
         </div>

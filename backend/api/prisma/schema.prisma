@@ -122,6 +122,14 @@ model User {
   download_caches           DownloadCache[]
   quiz_results              QuizResult[]
   lesson_progress           LessonProgress[]
+
+  // Custom EdTech features relations
+  courses                          Course[]                 @relation("TeacherCourses")
+  student_assignment_submissions   AssignmentSubmission[]   @relation("StudentAssignmentSubmissions")
+  graded_assignment_submissions    AssignmentSubmission[]   @relation("GradedAssignmentSubmissions")
+  discussion_topics                DiscussionTopic[]
+  discussion_replies               DiscussionReply[]
+  organization_memberships         OrganizationMember[]
 }
 
 model TeacherProfile {
@@ -164,14 +172,19 @@ model Lesson {
   created_at   DateTime    @default(now())
 
   // Relations
-  teacher         User            @relation("TeacherLessons", fields: [teacher_id], references: [id])
-  quizzes         Quiz[]
-  lesson_progress LessonProgress[]
-  ai_summaries    AiSummary[]
-  captions        Caption[]
-  content_ratings ContentRating[]
-  content_reports ContentReport[]
-  download_caches DownloadCache[]
+  teacher          User            @relation("TeacherLessons", fields: [teacher_id], references: [id])
+  quizzes          Quiz[]
+  lesson_progress  LessonProgress[]
+  ai_summaries     AiSummary[]
+  captions         Caption[]
+  content_ratings  ContentRating[]
+  content_reports  ContentReport[]
+  download_caches  DownloadCache[]
+
+  module_id        String?
+  module           Module?          @relation(fields: [module_id], references: [id])
+  assignments      Assignment[]
+  discussion_forum DiscussionForum?
 }
 
 model Quiz {
@@ -454,4 +467,224 @@ model DownloadCache {
 
   student User   @relation(fields: [student_id], references: [id])
   lesson  Lesson @relation(fields: [lesson_id], references: [id])
+}
+
+// ====================================================
+// COURSE & CURRICULUM STRUCTURE
+// Hierarchical: Course -> Modules -> Lessons
+// ====================================================
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Course {
+  id           String       @id @default(uuid())
+  teacher_id   String
+  title        String
+  title_sw     String?
+  description  String?
+  description_sw String?
+  subject      SubjectArea
+  form_level   FormLevel
+  thumbnail_url String?
+  is_free      Boolean      @default(false)
+  price_tsh    Int          @default(0)
+  status       CourseStatus @default(DRAFT)
+  order_index  Int          @default(0)
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+
+  teacher User     @relation("TeacherCourses", fields: [teacher_id], references: [id])
+  modules Module[]
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  course_id   String
+  title       String
+  title_sw    String?
+  description String?
+  order_index Int      @default(0)
+  created_at  DateTime @default(now())
+
+  course  Course   @relation(fields: [course_id], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+}
+
+// ====================================================
+// ASSIGNMENTS & SUBMISSIONS
+// Supports: file uploads, text submissions, peer review
+// ====================================================
+
+enum AssignmentType {
+  TEXT
+  FILE_UPLOAD
+  PEER_REVIEW
+}
+
+enum SubmissionStatus {
+  SUBMITTED
+  GRADED
+  RETURNED
+  LATE
+}
+
+model Assignment {
+  id                  String         @id @default(uuid())
+  lesson_id           String
+  title               String
+  instructions        String
+  instructions_sw     String?
+  type                AssignmentType @default(TEXT)
+  max_score           Int            @default(100)
+  due_date            DateTime?
+  allow_late          Boolean        @default(false)
+  peer_review_enabled Boolean        @default(false)
+  created_at          DateTime       @default(now())
+
+  lesson      Lesson               @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  submissions AssignmentSubmission[]
+}
+
+model AssignmentSubmission {
+  id              String           @id @default(uuid())
+  assignment_id   String
+  student_id      String
+  graded_by       String?
+  content_text    String?
+  file_url        String?
+  score           Int?
+  feedback        String?
+  status          SubmissionStatus @default(SUBMITTED)
+  submitted_at    DateTime         @default(now())
+  graded_at       DateTime?
+
+  assignment       Assignment @relation(fields: [assignment_id], references: [id], onDelete: Cascade)
+  student          User       @relation("StudentAssignmentSubmissions", fields: [student_id], references: [id])
+  grader           User?      @relation("GradedAssignmentSubmissions", fields: [graded_by], references: [id])
+  peer_reviews     PeerReview[] @relation("ReviewedSubmissions")
+  given_reviews    PeerReview[] @relation("ReviewerSubmissions")
+
+  @@unique([assignment_id, student_id])
+}
+
+model PeerReview {
+  id                    String   @id @default(uuid())
+  submission_id         String
+  reviewer_submission_id String
+  feedback              String
+  score                 Int?
+  created_at            DateTime @default(now())
+
+  submission          AssignmentSubmission @relation("ReviewedSubmissions", fields: [submission_id], references: [id], onDelete: Cascade)
+  reviewer_submission AssignmentSubmission @relation("ReviewerSubmissions", fields: [reviewer_submission_id], references: [id], onDelete: Cascade)
+}
+
+// ====================================================
+// DISCUSSION FORUMS
+// Per-lesson threaded Q&A boards
+// ====================================================
+
+model DiscussionForum {
+  id         String   @id @default(uuid())
+  lesson_id  String   @unique
+  title      String
+  created_at DateTime @default(now())
+
+  lesson Lesson           @relation(fields: [lesson_id], references: [id], onDelete: Cascade)
+  topics DiscussionTopic[]
+}
+
+model DiscussionTopic {
+  id         String   @id @default(uuid())
+  forum_id   String
+  author_id  String
+  title      String
+  body       String
+  is_pinned  Boolean  @default(false)
+  is_resolved Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  forum   DiscussionForum  @relation(fields: [forum_id], references: [id], onDelete: Cascade)
+  author  User             @relation(fields: [author_id], references: [id])
+  replies DiscussionReply[]
+}
+
+model DiscussionReply {
+  id         String   @id @default(uuid())
+  topic_id   String
+  author_id  String
+  body       String
+  is_answer  Boolean  @default(false) // Teacher-marked as the accepted answer
+  upvotes    Int      @default(0)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  topic  DiscussionTopic @relation(fields: [topic_id], references: [id], onDelete: Cascade)
+  author User            @relation(fields: [author_id], references: [id])
+}
+
+// ====================================================
+// INSTITUTIONAL / SCHOOL B2B
+// Schools / tutoring centres manage student groups
+// ====================================================
+
+enum OrganizationRole {
+  ADMIN
+  MANAGER
+  STUDENT
+}
+
+model Organization {
+  id           String   @id @default(uuid())
+  name         String
+  country      String   @default("TZ")
+  city         String?
+  contact_email String  @unique
+  contact_phone String?
+  logo_url     String?
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  members OrganizationMember[]
+  groups  StudentGroup[]
+}
+
+model OrganizationMember {
+  id              String           @id @default(uuid())
+  organization_id String
+  user_id         String
+  role            OrganizationRole @default(STUDENT)
+  joined_at       DateTime         @default(now())
+
+  organization Organization @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [user_id], references: [id])
+
+  @@unique([organization_id, user_id])
+}
+
+model StudentGroup {
+  id              String   @id @default(uuid())
+  organization_id String
+  name            String
+  description     String?
+  created_at      DateTime @default(now())
+
+  organization Organization        @relation(fields: [organization_id], references: [id], onDelete: Cascade)
+  members      StudentGroupMember[]
+}
+
+model StudentGroupMember {
+  id        String   @id @default(uuid())
+  group_id  String
+  user_id   String
+  joined_at DateTime @default(now())
+
+  group StudentGroup @relation(fields: [group_id], references: [id], onDelete: Cascade)
+
+  @@unique([group_id, user_id])
 }

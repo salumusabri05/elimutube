@@ -228,6 +228,53 @@ export default function LiveMarketingPage() {
           </div>
         </div>
 
+        {/* NECTA EXAM COUNTDOWN & REVISION ROADMAP */}
+        <div className="flex flex-col gap-10">
+          <div className="text-center max-w-3xl mx-auto flex flex-col gap-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400">
+              {t("Exam Preparation", "Maandalizi ya Mtihani")}
+            </span>
+            <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {t("NECTA National Exams Are Approaching", "Mitihani ya Kitaifa ya NECTA Inakaribia")}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              {t(
+                "Time waits for no one. Follow this month-by-month revision roadmap to ensure you cover the entire syllabus before exam day.",
+                "Muda hausubiri mtu. Fuata mpango huu wa marudio ya kila mwezi ili uhakikishe umefunika mtaala mzima kabla ya siku ya mtihani."
+              )}
+            </p>
+          </div>
+
+          {/* Revision Roadmap Timeline */}
+          <div className="max-w-3xl mx-auto w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                { month: "June", monthSw: "Juni", focus: "Core Fundamentals Review", focusSw: "Marudio ya Misingi Muhimu", detail: "Revisit Form 1 & 2 foundation topics across all subjects. Strengthen weak areas identified by AI analysis.", detailSw: "Rudia mada za msingi za Kidato cha 1 na 2. Imarisha maeneo dhaifu yaliyogunduliwa na AI.", color: "border-l-blue-500" },
+                { month: "July", monthSw: "Julai", focus: "Form 3 Advanced Topics", focusSw: "Mada za Kidato cha 3", detail: "Deep-dive into Form 3 content. Complete all subject playlists and take AI-powered practice quizzes.", detailSw: "Ingia kwa kina kwenye masomo ya Kidato cha 3. Kamilisha orodha zote na ufanye majaribio ya AI.", color: "border-l-amber-500" },
+                { month: "August", monthSw: "Agosti", focus: "Form 4 Syllabus Completion", focusSw: "Ukamilishaji wa Mtaala wa Kidato cha 4", detail: "Finish all remaining Form 4 topics. Use live sessions for difficult concepts like Genetics and Organic Chemistry.", detailSw: "Maliza mada zote zilizobaki za Kidato cha 4. Tumia vipindi vya live kwa dhana ngumu kama Jenetiki na Kemia Hai.", color: "border-l-emerald-500" },
+                { month: "September", monthSw: "Septemba", focus: "Full Syllabus Speed Run", focusSw: "Marudio ya Haraka ya Mtaala Mzima", detail: "Speed-run through the entire syllabus using ElimuTube summaries. Identify and fill any remaining knowledge gaps.", detailSw: "Pitia mtaala mzima kwa haraka kwa kutumia muhtasari wa ElimuTube. Gundua na jaza mapengo yaliyobaki.", color: "border-l-violet-500" },
+                { month: "October", monthSw: "Oktoba", focus: "Past Papers & Mock Exams", focusSw: "Mitihani ya Zamani na Majaribio", detail: "Solve 5+ years of past NECTA papers under timed conditions. Review answers with the AI tutor for detailed explanations.", detailSw: "Tatua mitihani ya NECTA ya miaka 5+ kwa muda maalum. Pitia majibu na AI kwa maelezo ya kina.", color: "border-l-pink-500" },
+                { month: "November", monthSw: "Novemba", focus: "Final Revision & Exam Week", focusSw: "Marudio ya Mwisho na Wiki ya Mtihani", detail: "Focus on high-yield topics, formula sheets, and mental preparation. Stay calm and trust your preparation.", detailSw: "Zingatia mada zenye alama nyingi, karatasi za fomula, na maandalizi ya akili. Tulia na uamini maandalizi yako.", color: "border-l-red-500" },
+              ].map((item, idx) => (
+                <div key={idx} className={`p-5 rounded-xl bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-850 border-l-4 ${item.color} flex flex-col gap-2 hover:-translate-y-0.5 transition duration-300`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                      {language === "SW" ? item.monthSw : item.month}
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">{t("Phase", "Hatua")} {idx + 1}</span>
+                  </div>
+                  <h5 className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                    {language === "SW" ? item.focusSw : item.focus}
+                  </h5>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-450 leading-relaxed">
+                    {language === "SW" ? item.detailSw : item.detail}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* CALL TO ACTION DOWNLOAD BLOCK */}
         <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 p-8 sm:p-12 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
           <div className="flex flex-col gap-3 text-center md:text-left">
